@@ -1,5 +1,5 @@
-import { BaseCommand } from "@src/types/structure/command";
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { BaseCommand } from '@src/types/structure/command';
+import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 
 /**
  * A command that randomly selects one item from a user-provided list.
