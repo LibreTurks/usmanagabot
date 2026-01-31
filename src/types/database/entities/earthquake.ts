@@ -23,7 +23,7 @@ export class Earthquake {
     seismicportal_api_url!: string;
 
     @Column({ type: 'bigint', nullable: true, default: null })
-    ping_role_id!: string;
+    ping_role_id!: string | null;
 
     @Column({ type: 'varchar', nullable: true, default: 'en', length: 8 })
     region_code!: string;
@@ -60,4 +60,21 @@ export class EarthquakeLogs {
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     timestamp!: Date;
+}
+
+@Entity()
+export class EarthquakeSubscription {
+    @PrimaryGeneratedColumn({ type: 'integer' })
+    id!: number;
+
+    @ManyToOne(() => Users, { nullable: false, eager: true })
+    @JoinColumn({ name: 'user', referencedColumnName: 'id' })
+    user!: Users;
+
+    @ManyToOne(() => Guilds, { nullable: false, eager: true })
+    @JoinColumn({ name: 'guild', referencedColumnName: 'id' })
+    guild!: Guilds;
+
+    @Column({ type: 'text', nullable: false })
+    city!: string;
 }
