@@ -254,8 +254,8 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                         title: `:gear: ${this.t.commands({ caller: this.name, key: 'pretty_name', guild_id: BigInt(interaction.guildId!) })}`,
                         color: Colors.Blurple,
                         items: subscriptions.map((sub) => ({
-                            name: sub.city,
-                            pretty_name: sub.city,
+                            name: sub.city.toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase()),
+                            pretty_name: sub.city.toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase()),
                             namespace: 'command' as const,
                         })),
                         items_per_page: 10,
