@@ -1,10 +1,16 @@
 {
     "$schema": "../../../../types/structure/schemas/command.json",
     "earthquake": {
+        "name": "deprem_bildirimi",
         "pretty_name": "Deprem Bildirici",
         "description": "Belirtilen bölgede meydana gelen depremler hakkında bildirimler alır.",
         "help": "Belirtilen bölgede meydana gelen depremler hakkında bildirimler alır.",
-        "parameters": {},
+        "parameters": {
+            "city": {
+                "name": "şehir",
+                "description": "Bildirim almak istediğiniz şehir.",
+            },
+        },
         "execute": {
             "coordinates": "Koordinatlar",
             "id": "Kimlik",
@@ -15,8 +21,30 @@
             "source": "Kaynak",
             "time": "Zaman",
             "title": "Yeni Deprem Uyarısı!",
+            "added": "**{city}** için deprem bildirimlerine başarıyla abone olundu.",
+            "removed": "**{city}** için deprem bildirimlerinden başarıyla çıkıldı.",
+            "not_found": "**{city}** için abonelik bulunamadı.",
+            "already_exists": "Zaten **{city}** için abonesiniz.",
+            "list_header": "{user} için Deprem Abonelikleri",
+            "no_subscriptions": "Aktif abonelik bulunamadı.",
+            "admin_only": "Diğer kullanıcıların aboneliklerini yönetmek için yetkiniz yok.",
+            "city_not_found": "**{city}** şehri bulunamadı veya geçerli bir şehir olarak tanınmadı.",
+            "api_error": "Şehir doğrulanırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
         },
-        "subcommands": {},
+        "subcommands": {
+            "add": {
+                "name": "ekle",
+                "description": "Yeni bir deprem aboneliği ekler.",
+            },
+            "remove": {
+                "name": "kaldır",
+                "description": "Var olan bir deprem aboneliğini kaldırır.",
+            },
+            "list": {
+                "name": "listele",
+                "description": "Tüm deprem aboneliklerini listeler.",
+            },
+        },
         "events": {},
         "settings": {
             "setmagnitudelimit": {

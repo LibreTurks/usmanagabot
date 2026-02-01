@@ -1,14 +1,12 @@
 import { In } from 'typeorm';
 import { normalizeText } from '@utils/string';
 import { BotClient } from '@services/client';
-import { Earthquake, EarthquakeLogs } from '@src/types/database/entities/earthquake';
-import { EarthquakeSubscription } from '@src/types/database/entities/earthquake_subscription';
+import { Earthquake, EarthquakeLogs, EarthquakeSubscription } from '@src/types/database/entities/earthquake';
 import { Cron } from '@src/types/decorator/cronjob';
 import {
     SettingChannelMenuComponent,
     SettingGenericSettingComponent,
     SettingModalComponent,
-    SettingRoleSelectMenuComponent,
 } from '@src/types/decorator/settingcomponents';
 import { CustomizableCommand } from '@src/types/structure/command';
 import {
@@ -18,16 +16,20 @@ import {
     ButtonStyle,
     ChannelSelectMenuInteraction,
     ChannelType,
+    ChatInputCommandInteraction,
     Colors,
     EmbedBuilder,
+    MessageFlags,
     ModalSubmitInteraction,
     RoleSelectMenuBuilder,
     RoleSelectMenuInteraction,
+    SlashCommandBuilder,
     StringSelectMenuBuilder,
     StringSelectMenuInteraction,
-    TextInputBuilder,
     TextInputStyle,
 } from 'discord.js';
+import { CommandLoader } from '..';
+import { Paginator } from '@src/utils/paginator';
 
 /**
  * A pseudo-command that notifies a channel about recent earthquakes.
@@ -48,7 +50,44 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
     // ============================ HEADER ============================ //
     constructor() {
         super({ name: 'earthquake' });
-        this.base_cmd_data = null;
+        (this.base_cmd_data as SlashCommandBuilder)
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('add')
+                    .setDescription(this.t.commands({ key: 'subcommands.add.description' }))
+                    .setNameLocalizations(this.getLocalizations('subcommands.add.name'))
+                    .setDescriptionLocalizations(this.getLocalizations('subcommands.add.description'))
+                    .addStringOption((option) =>
+                        option
+                            .setName('city')
+                            .setDescription(this.t.commands({ key: 'parameters.city.description' }))
+                            .setNameLocalizations(this.getLocalizations('parameters.city.name'))
+                            .setDescriptionLocalizations(this.getLocalizations('parameters.city.description'))
+                            .setRequired(true),
+                    ),
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('remove')
+                    .setDescription(this.t.commands({ key: 'subcommands.remove.description' }))
+                    .setNameLocalizations(this.getLocalizations('subcommands.remove.name'))
+                    .setDescriptionLocalizations(this.getLocalizations('subcommands.remove.description'))
+                    .addStringOption((option) =>
+                        option
+                            .setName('city')
+                            .setDescription(this.t.commands({ key: 'parameters.city.description' }))
+                            .setNameLocalizations(this.getLocalizations('parameters.city.name'))
+                            .setDescriptionLocalizations(this.getLocalizations('parameters.city.description'))
+                            .setRequired(true),
+                    ),
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('list')
+                    .setDescription(this.t.commands({ key: 'subcommands.list.description' }))
+                    .setNameLocalizations(this.getLocalizations('subcommands.list.name'))
+                    .setDescriptionLocalizations(this.getLocalizations('subcommands.list.description')),
+            );
     }
 
     public async prepareCommandData(guild_id: bigint): Promise<void> {
@@ -71,6 +110,165 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
 
     // =========================== EXECUTE ============================ //
     /**
+     * The main execution method for the earthquake notifier command.
+     * This method handles subcommands for adding, removing, and listing earthquake subscriptions for users.
+     * It performs permission checks, validates city names using the Nominatim API,
+     * and interacts with the database to manage subscriptions.
+     * @param interaction The interaction from the slash command.
+     */
+    public async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+        const subcommand = interaction.options.getSubcommand();
+        const target_user = interaction.options.getUser('user') || interaction.user;
+        const city_raw = interaction.options.getString('city');
+        const city = city_raw ? normalizeText(city_raw) : null;
+
+        const guild = await this.db.getGuild(BigInt(interaction.guildId!));
+        const user = await this.db.getUser(BigInt(target_user.id));
+
+        switch (subcommand) {
+            case 'add': {
+                if (!city || !city_raw) return;
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city_raw)}&format=json&limit=5`,
+                    );
+                    const data = (await response.json()) as { addresstype: string }[];
+                    if (data.length === 0 || !data.find((place) => place.addresstype === 'city')) {
+                        await interaction.reply({
+                            content: this.t.commands({
+                                key: 'execute.city_not_found',
+                                replacements: { city: city_raw },
+                                guild_id: BigInt(interaction.guildId!),
+                            }),
+                            flags: MessageFlags.Ephemeral,
+                        });
+                        return;
+                    }
+                } catch (error) {
+                    this.log('error', 'execute.api_error', { error: (error as Error).message });
+                    await interaction.reply({
+                        content: this.t.commands({
+                            key: 'execute.api_error',
+                            guild_id: BigInt(interaction.guildId!),
+                        }),
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+
+                const existing = await this.db.findOne(EarthquakeSubscription, {
+                    where: {
+                        user: { uid: BigInt(target_user.id) },
+                        guild: { gid: BigInt(interaction.guildId!) },
+                        city,
+                    },
+                });
+
+                if (existing) {
+                    await interaction.reply({
+                        content: this.t.commands({
+                            key: 'execute.already_exists',
+                            replacements: { city: city },
+                            guild_id: BigInt(interaction.guildId!),
+                        }),
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+
+                const subscription = new EarthquakeSubscription();
+                subscription.user = user!;
+                subscription.guild = guild!;
+                subscription.city = city;
+
+                await this.db.save(subscription);
+
+                await interaction.reply({
+                    content: this.t.commands({
+                        key: 'execute.added',
+                        replacements: { city: city },
+                        guild_id: BigInt(interaction.guildId!),
+                    }),
+                    flags: MessageFlags.Ephemeral,
+                });
+                break;
+            }
+            case 'remove': {
+                if (!city) return;
+
+                const subscription = await this.db.findOne(EarthquakeSubscription, {
+                    where: {
+                        user: { uid: BigInt(target_user.id) },
+                        guild: { gid: BigInt(interaction.guildId!) },
+                        city,
+                    },
+                });
+
+                if (!subscription) {
+                    await interaction.reply({
+                        content: this.t.commands({
+                            key: 'execute.not_found',
+                            replacements: { city: city },
+                            guild_id: BigInt(interaction.guildId!),
+                        }),
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+
+                await this.db.remove(subscription);
+
+                await interaction.reply({
+                    content: this.t.commands({
+                        key: 'execute.removed',
+                        replacements: { city: city },
+                        guild_id: BigInt(interaction.guildId!),
+                    }),
+                    flags: MessageFlags.Ephemeral,
+                });
+                break;
+            }
+            case 'list': {
+                const subscriptions = await this.db.find(EarthquakeSubscription, {
+                    where: {
+                        user: { uid: BigInt(target_user.id) },
+                        guild: { gid: BigInt(interaction.guildId!) },
+                    },
+                });
+
+                if (subscriptions.length === 0) {
+                    await interaction.reply({
+                        content: this.t.commands({
+                            key: 'execute.no_subscriptions',
+                            guild_id: BigInt(interaction.guildId!),
+                        }),
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+                const { embeds, components } = await Paginator.generatePage(
+                    interaction.guild!.id,
+                    interaction.user.id,
+                    this.name,
+                    {
+                        title: `:gear: ${this.t.commands({ caller: this.name, key: 'pretty_name', guild_id: BigInt(interaction.guildId!) })}`,
+                        color: Colors.Blurple,
+                        items: subscriptions.map((sub) => ({
+                            name: sub.city.toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase()),
+                            pretty_name: sub.city.toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase()),
+                            namespace: 'command' as const,
+                        })),
+                        items_per_page: 10,
+                        enable_select_menu: false,
+                    },
+                );
+                await interaction.reply({ embeds, components, flags: MessageFlags.Ephemeral });
+                break;
+            }
+        }
+    }
+
+    /**
      * Executes the earthquake notification cron job.
      * This method runs every 5 minutes as defined by the `@Cron` decorator.
      * It fetches data for all enabled guilds, checks for new earthquakes exceeding the magnitude limit,
@@ -78,7 +276,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
      * It also manages a log of delivered earthquakes to avoid duplicate notifications and prunes old logs.
      */
     @Cron({ schedule: '*/5 * * * *' })
-    public async execute(): Promise<void> {
+    public async cronjob(): Promise<void> {
         this.log('debug', 'cronjob.start');
         const earthquake = await this.db.find(Earthquake, { where: { is_enabled: true } });
         if (!earthquake || !earthquake.length) {
@@ -123,7 +321,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                     .filter((loc): loc is string => !!loc)
                     .map((loc) => normalizeText(loc));
 
-                const subscribedUserIds: bigint[] = [];
+                const subscribed_user_ids: bigint[] = [];
                 if (locations.length > 0) {
                     const subscriptions = await this.db.find(EarthquakeSubscription, {
                         where: {
@@ -133,7 +331,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                     });
 
                     if (subscriptions.length > 0) {
-                        subscribedUserIds.push(...new Set(subscriptions.map((sub) => sub.user.uid)));
+                        subscribed_user_ids.push(...new Set(subscriptions.map((sub) => sub.user.uid)));
                     }
                 }
 
@@ -218,7 +416,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                             delivered_count++;
 
                             // Send DMs to subscribed users
-                            for (const uid of subscribedUserIds) {
+                            for (const uid of subscribed_user_ids) {
                                 try {
                                     const user = await BotClient.client.users.fetch(uid.toString());
                                     if (user) {
@@ -265,6 +463,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
         earthquake!.timestamp = new Date();
         this.enabled = earthquake!.is_enabled;
         await this.db.save(Earthquake, earthquake!);
+        CommandLoader.RESTCommandLoader(this, interaction.guildId!);
         await this.settingsUI(interaction);
         this.log('debug', 'settings.toggle.success', {
             name: this.name,
@@ -339,7 +538,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
         }
 
         if (interaction.isButton() && args === 'clear') {
-            earthquake.ping_role_id = null as any; // TypeORM will handle null
+            earthquake.ping_role_id = null;
             earthquake.latest_action_from_user = user;
             earthquake.timestamp = new Date();
             await this.db.save(Earthquake, earthquake);
@@ -356,7 +555,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                 components: [
                     new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
                         new RoleSelectMenuBuilder()
-                            .setCustomId(`settings:earthquake:setpingrole`)
+                            .setCustomId('settings:earthquake:setpingrole')
                             .setPlaceholder(
                                 this.t.commands({
                                     key: 'settings.setpingrole.placeholder',
@@ -368,7 +567,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                     ),
                     new ActionRowBuilder<ButtonBuilder>().addComponents(
                         new ButtonBuilder()
-                            .setCustomId(`settings:earthquake:setpingrole:clear`)
+                            .setCustomId('settings:earthquake:setpingrole:clear')
                             .setLabel(
                                 this.t.commands({
                                     key: 'settings.setpingrole.clear_label',
@@ -443,7 +642,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
     @SettingGenericSettingComponent({
         database: Earthquake,
         database_key: 'everyone_ping_threshold',
-        format_specifier: '**%s**',
+        format_specifier: '%s',
     })
     public async setEveryonePingThreshold(
         interaction: StringSelectMenuInteraction | ButtonInteraction,
@@ -506,11 +705,11 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                         .toJSON(),
                     new ActionRowBuilder<ButtonBuilder>().addComponents(
                         new ButtonBuilder()
-                            .setCustomId(`settings:earthquake:seteveryonepingthreshold:clear`)
+                            .setCustomId('settings:earthquake:seteveryonepingthreshold:clear')
                             .setLabel(
                                 this.t.system({
                                     caller: 'buttons',
-                                    key: 'clear',
+                                    key: 'Clear Threshold',
                                     guild_id: BigInt(interaction.guildId!),
                                 }),
                             )

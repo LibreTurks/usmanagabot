@@ -25,10 +25,11 @@ interface pageItem {
     config: {
         title: string;
         color: ColorResolvable;
-        items: { name: string; pretty_name: string; description: string; namespace: 'command' | 'settings' }[];
+        items: { name: string; pretty_name: string; description?: string; namespace: 'command' | 'settings' }[];
         items_per_page: number;
         select_menu_placeholder?: string;
         enable_select_menu_descriptions?: boolean;
+        enable_select_menu?: boolean;
     };
 }
 
@@ -92,7 +93,14 @@ export class Paginator {
         components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[];
     } {
         const { current_page, config } = pagination_state;
-        const { title, color, items_per_page, select_menu_placeholder, enable_select_menu_descriptions } = config;
+        const {
+            title,
+            color,
+            items_per_page,
+            select_menu_placeholder,
+            enable_select_menu_descriptions,
+            enable_select_menu,
+        } = config;
 
         const post = new EmbedBuilder();
         const button_row = new ActionRowBuilder<ButtonBuilder>();
@@ -106,12 +114,6 @@ export class Paginator {
             .setEmoji('➡️')
             .setLabel(Paginator.t({ caller: 'buttons', key: 'next', guild_id: BigInt(guild_id!) }))
             .setStyle(ButtonStyle.Primary);
-        const string_select_menu = new StringSelectMenuBuilder()
-            .setCustomId(`command:${command_name}:pageitem`)
-            .setPlaceholder(
-                select_menu_placeholder ||
-                    Paginator.t({ caller: 'placeholders', key: 'selectItemFromList', guild_id: BigInt(guild_id!) }),
-            );
 
         post.setTitle(title).setColor(color);
         let description = '';
@@ -123,22 +125,15 @@ export class Paginator {
 
         const start_index = (current_page - 1) * items_per_page;
         const end_index = current_page * items_per_page;
-        const page_items = config.items.slice(start_index, end_index);
+        const page_items = config.items
+            .sort((a, b) => a.pretty_name.localeCompare(b.pretty_name))
+            .slice(start_index, end_index);
 
-        for (const item of page_items.sort((a, b) => a.pretty_name.localeCompare(b.pretty_name))) {
-            description += `**${item.pretty_name}**\n${item.description}\n\n`;
-            string_select_menu.addOptions({
-                label: item.pretty_name,
-                description: enable_select_menu_descriptions
-                    ? item.description?.substring(0, 97) + (item.description?.length >= 100 ? '...' : '') || '<missing>'
-                    : undefined,
-                value:
-                    item.namespace === 'settings'
-                        ? `settings:${item.name}`
-                        : `command:${command_name}:pageitem:${item.name}`,
-            });
+        for (const item of page_items) {
+            description += `**${item.pretty_name}**${item.description ? `\n${item.description}` : ''}\n\n`;
         }
-        post.setDescription(description.trim());
+
+        post.setDescription(description.trim() || 'No items available.');
         post.setFooter({
             text: Paginator.t({
                 caller: 'labels',
@@ -147,13 +142,39 @@ export class Paginator {
                 guild_id: BigInt(guild_id!),
             }),
         });
+        const rows: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [];
+
+        if (config.items.length > items_per_page) {
+            rows.push(button_row);
+        }
+
+        if (enable_select_menu !== false) {
+            const string_select_menu = new StringSelectMenuBuilder()
+                .setCustomId(`command:${command_name}:pageitem`)
+                .setPlaceholder(
+                    select_menu_placeholder ||
+                        Paginator.t({ caller: 'placeholders', key: 'selectItemFromList', guild_id: BigInt(guild_id!) }),
+                );
+
+            for (const item of page_items) {
+                string_select_menu.addOptions({
+                    label: item.pretty_name,
+                    description: enable_select_menu_descriptions
+                        ? item.description?.substring(0, 97) + (item.description?.length >= 100 ? '...' : '')
+                        : undefined,
+                    value:
+                        item.namespace === 'settings'
+                            ? `settings:${item.name}`
+                            : `command:${command_name}:pageitem:${item.name}`,
+                });
+            }
+
+            rows.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(string_select_menu));
+        }
 
         return {
             embeds: [post],
-            components: [
-                ...(config.items.length > items_per_page ? [button_row] : []),
-                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(string_select_menu),
-            ],
+            components: rows,
         };
     }
 
@@ -190,6 +211,7 @@ export class Paginator {
                     items_per_page,
                     select_menu_placeholder: o.select_menu_placeholder,
                     enable_select_menu_descriptions: o.enable_select_menu_descriptions ?? true,
+                    enable_select_menu: o.enable_select_menu,
                 },
             };
             Paginator.page_states.set(state_key, pagination_state);
@@ -201,6 +223,7 @@ export class Paginator {
                 items_per_page,
                 select_menu_placeholder: o.select_menu_placeholder,
                 enable_select_menu_descriptions: o.enable_select_menu_descriptions ?? true,
+                enable_select_menu: o.enable_select_menu,
             };
         }
 

@@ -1,10 +1,16 @@
 {
     "$schema": "../../../../types/structure/schemas/command.json",
     "earthquake": {
+        "name": "earthquake_notify",
         "pretty_name": "Earthquake Notifier",
         "description": "Receives notifications about earthquakes occurring in the specified region.",
         "help": "Receives notifications about earthquakes occurring in the specified region.",
-        "parameters": {},
+        "parameters": {
+            "city": {
+                "name": "city",
+                "description": "The city to receive notifications about earthquakes.",
+            },
+        },
         "execute": {
             "coordinates": "Coordinates",
             "id": "ID",
@@ -15,8 +21,30 @@
             "source": "Source",
             "time": "Time",
             "title": "New Earthquake Alert!",
+            "added": "**{city}** for earthquake notifications successfully subscribed.",
+            "removed": "**{city}** for earthquake notifications successfully unsubscribed.",
+            "not_found": "**{city}** subscription not found.",
+            "already_exists": "Already subscribed to **{city}**.",
+            "list_header": "{user} for Earthquake Subscriptions",
+            "no_subscriptions": "No active subscriptions found.",
+            "admin_only": "You do not have permission to manage other users' subscriptions.",
+            "city_not_found": "**{city}** not found or not recognized as a valid city.",
+            "api_error": "An error occurred while validating the city. Please try again later.",
         },
-        "subcommands": {},
+        "subcommands": {
+            "add": {
+                "name": "add",
+                "description": "Adds a new earthquake subscription.",
+            },
+            "remove": {
+                "name": "remove",
+                "description": "Removes an existing earthquake subscription.",
+            },
+            "list": {
+                "name": "list",
+                "description": "Lists all earthquake subscriptions.",
+            },
+        },
         "events": {},
         "settings": {
             "setmagnitudelimit": {
@@ -77,7 +105,7 @@
                 "description": "Sets the magnitude threshold for pinging everyone.",
                 "display_name": "@everyone Ping Threshold",
                 "pretty_name": "@everyone Ping Threshold",
-		"placeholder": "Select the minimum threshold",
+                "placeholder": "Select the minimum threshold",
                 "invalid_value": "Invalid magnitude value provided.",
                 "parameters": {
                     "threshold": {
