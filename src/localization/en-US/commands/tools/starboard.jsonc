@@ -3,8 +3,10 @@
     "command": {
         "settings": {
             "toggle": {
-                "display_name": "Enable Starboard",
-            },
+                "display_name": "Enable Starboard"
+            }
+        },
+    },
             "toggleselfstar": {
                 "display_name": "Allow Self-Starring",
             },
