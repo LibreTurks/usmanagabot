@@ -35,16 +35,16 @@ export default class StarboardCommand extends CustomizableCommand {
         let settings = await this.db.findOne(StarboardSettings, { where: { from_guild: guild! } });
         if (!settings) {
             const new_settings = new StarboardSettings();
-            new_settings.is_enabled = 'Disabled';
+            new_settings.is_enabled = 'No';
             new_settings.threshold = 3;
-            new_settings.allow_self_star = 'Not Allowed';
-            new_settings.remove_below_threshold = 'Delete';
+            new_settings.allow_self_star = 'No';
+            new_settings.remove_below_threshold = 'Yes';
             new_settings.latest_action_from_user = system_user!;
             new_settings.from_guild = guild!;
             settings = await this.db.save(StarboardSettings, new_settings);
             this.log('log', 'prepare.database.success', { name: this.name, guild: guild_id });
         }
-        this.enabled = settings.is_enabled === 'Enabled';
+        this.enabled = settings.is_enabled === 'Yes';
         this.log('debug', 'prepare.success', { name: this.name, guild: guild_id });
     }
 
@@ -65,8 +65,8 @@ export default class StarboardCommand extends CustomizableCommand {
         format_specifier: '%s',
         options: {
             values: [
-                { label: 'Enabled', description: 'Enable the starboard system' },
-                { label: 'Disabled', description: 'Disable the starboard system' },
+                { label: 'Yes', description: 'Enable the starboard system' },
+                { label: 'No', description: 'Disable the starboard system' },
             ],
         },
     })
@@ -80,7 +80,7 @@ export default class StarboardCommand extends CustomizableCommand {
         settings!.is_enabled = args;
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
-        this.enabled = args === 'Enabled';
+        this.enabled = args === 'Yes';
         await this.db.save(StarboardSettings, settings!);
         CommandLoader.RESTCommandLoader(this, interaction.guildId!);
         await this.settingsUI(interaction);
@@ -205,8 +205,8 @@ export default class StarboardCommand extends CustomizableCommand {
         format_specifier: '%s',
         options: {
             values: [
-                { label: 'Allowed', description: 'Users can star their own messages' },
-                { label: 'Not Allowed', description: 'Users cannot star their own messages' },
+                { label: 'Yes', description: 'Users can star their own messages' },
+                { label: 'No', description: 'Users cannot star their own messages' },
             ],
         },
     })
@@ -235,8 +235,8 @@ export default class StarboardCommand extends CustomizableCommand {
         format_specifier: '%s',
         options: {
             values: [
-                { label: 'Delete', description: 'Remove messages when below threshold' },
-                { label: 'Keep', description: 'Keep messages even when below threshold' },
+                { label: 'Yes', description: 'Remove messages when below threshold' },
+                { label: 'No', description: 'Keep messages even when below threshold' },
             ],
         },
     })

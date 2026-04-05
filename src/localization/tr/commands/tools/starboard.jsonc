@@ -1,5 +1,12 @@
 {
     "$schema": "../../../../types/structure/schemas/command.json",
+    "command": {
+        "settings": {
+            "toggle": {
+                "display_name": "Aktif",
+            },
+        },
+    },
     "starboard": {
         "name": "starboard",
         "pretty_name": "Yıldız Panosu",
@@ -16,7 +23,7 @@
         "settings": {
             "toggle": {
                 "description": "Yıldız panosu sistemini etkinleştirir veya devre dışı bırakır.",
-                "display_name": "Yıldız Panosunu Etkinleştir",
+                "display_name": "Aktif",
                 "pretty_name": "Yıldız Panosunu Etkinleştir",
                 "parameters": {},
             },

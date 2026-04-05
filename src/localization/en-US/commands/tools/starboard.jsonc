@@ -1,5 +1,12 @@
 {
     "$schema": "../../../../types/structure/schemas/command.json",
+    "command": {
+        "settings": {
+            "toggle": {
+                "display_name": "Active",
+            },
+        },
+    },
     "starboard": {
         "name": "starboard",
         "pretty_name": "Starboard",
@@ -16,7 +23,7 @@
         "settings": {
             "toggle": {
                 "description": "Enables or disables the starboard system.",
-                "display_name": "Enable Starboard",
+                "display_name": "Active",
                 "pretty_name": "Enable Starboard",
                 "parameters": {},
             },
