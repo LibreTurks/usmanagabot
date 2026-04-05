@@ -5,6 +5,12 @@
             "toggle": {
                 "display_name": "Yıldız Panosunu Etkinleştir",
             },
+            "toggleselfstar": {
+                "display_name": "Kendine Yıldız Vermeye İzin Ver",
+            },
+            "toggleremovebelowthreshold": {
+                "display_name": "Eşik Altındayken Sil",
+            },
         },
     },
     "starboard": {
