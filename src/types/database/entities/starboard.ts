@@ -28,6 +28,9 @@ export class Starboard {
     @JoinColumn({ name: 'from_guild', referencedColumnName: 'id' })
     from_guild!: Guilds;
 
+    @Column({ type: 'bigint', nullable: true, default: null })
+    starboard_message_id!: bigint | null;
+
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     timestamp!: Date;
 }

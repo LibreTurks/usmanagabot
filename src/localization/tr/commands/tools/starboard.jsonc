@@ -1,0 +1,91 @@
+{
+    "$schema": "../../../../types/structure/schemas/command.json",
+    "starboard": {
+        "name": "starboard",
+        "pretty_name": "Yıldız Panosu",
+        "description": "Sunucunuz için yıldız panosu sistemini yapılandırır.",
+        "help": "Sunucunuz için yıldız panosu sistemini yapılandırır.",
+        "execute": {},
+        "subcommands": {
+            "settings": {
+                "name": "ayarlar",
+                "description": "Yıldız panosu ayarlar menüsünü açar.",
+            },
+        },
+        "events": {},
+        "settings": {
+            "toggle": {
+                "description": "Yıldız panosu sistemini etkinleştirir veya devre dışı bırakır.",
+                "display_name": "Yıldız Panosu Sistemi",
+                "pretty_name": "Yıldız Panosu Sistemini Aç/Kapat",
+                "parameters": {},
+            },
+            "setstarboardchannel": {
+                "description": "Yıldız panosu mesajlarının gönderileceği kanalı ayarlar.",
+                "display_name": "Yıldız Panosu Kanalı",
+                "placeholder": "Yıldız panosu kanalını seçin",
+                "pretty_name": "Yıldız Panosu Kanalı",
+                "parameters": {},
+            },
+            "setthreshold": {
+                "description": "Yıldız panosuna göndermek için gereken yıldız sayısını ayarlar.",
+                "display_name": "Yıldız Eşiği",
+                "placeholder": "Yıldız eşiğini seçin",
+                "pretty_name": "Yıldız Eşiği",
+                "parameters": {},
+            },
+            "toggleselfstar": {
+                "description": "Kullanıcıların kendi mesajlarına yıldız vermesine izin verir.",
+                "display_name": "Kendine Yıldız Vermeye İzin Ver",
+                "pretty_name": "Kendine Yıldız Vermeye İzin Ver",
+                "parameters": {},
+            },
+            "toggleremovebelowthreshold": {
+                "description": "Mesajlar eşiğin altına düştüğünde yıldız panosundan kaldırır.",
+                "display_name": "Eşik Altında Kaldır",
+                "pretty_name": "Eşik Altında Kaldır",
+                "parameters": {},
+            },
+        },
+        "logging": {
+            "debug": {
+                "settings": {
+                    "channel": {
+                        "start": "Yıldız panosu kanalı değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu kanalı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "threshold": {
+                        "start": "Yıldız panosu eşik değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu eşiği \"{guild}\" sunucusunda \"{threshold}\" olarak başarıyla değiştirildi.",
+                    },
+                    "selfstar": {
+                        "start": "Yıldız panosu kendine yıldız verme ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu kendine yıldız verme ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "remove": {
+                        "start": "Yıldız panosu eşik altında kaldırma ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu eşik altında kaldırma ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "toggle": {
+                        "start": "Yıldız panosu sistemi etkinleştirme/devre dışı bırakma işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu sistemi \"{guild}\" sunucusunda \"{toggle}\" olarak başarıyla güncellendi.",
+                    },
+                },
+                "prepare": {
+                    "start": "\"Yıldız Panosu\" komutu \"{guild}\" için hazırlanıyor.",
+                    "success": "\"Yıldız Panosu\" komutu \"{guild}\" için başarıyla hazırlandı.",
+                },
+            },
+            "info": {},
+            "warn": {},
+            "error": {},
+            "log": {
+                "prepare": {
+                    "database": {
+                        "success": "\"Yıldız Panosu\" komut ayarları \"{guild}\" için veritabanında başarıyla işlendi.",
+                    },
+                },
+            },
+        },
+    },
+}
