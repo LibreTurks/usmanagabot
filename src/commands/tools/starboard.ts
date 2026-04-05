@@ -35,16 +35,16 @@ export default class StarboardCommand extends CustomizableCommand {
         let settings = await this.db.findOne(StarboardSettings, { where: { from_guild: guild! } });
         if (!settings) {
             const new_settings = new StarboardSettings();
-            new_settings.is_enabled = 'No';
+            new_settings.is_enabled = false;
             new_settings.threshold = 3;
-            new_settings.allow_self_star = 'No';
-            new_settings.remove_below_threshold = 'Yes';
+            new_settings.allow_self_star = false;
+            new_settings.remove_below_threshold = true;
             new_settings.latest_action_from_user = system_user!;
             new_settings.from_guild = guild!;
             settings = await this.db.save(StarboardSettings, new_settings);
             this.log('log', 'prepare.database.success', { name: this.name, guild: guild_id });
         }
-        this.enabled = settings.is_enabled === 'Yes';
+        this.enabled = settings.is_enabled;
         this.log('debug', 'prepare.success', { name: this.name, guild: guild_id });
     }
 
@@ -77,10 +77,10 @@ export default class StarboardCommand extends CustomizableCommand {
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.is_enabled = args;
+        settings!.is_enabled = args === 'Yes';
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
-        this.enabled = args === 'Yes';
+        this.enabled = settings!.is_enabled;
         await this.db.save(StarboardSettings, settings!);
         CommandLoader.RESTCommandLoader(this, interaction.guildId!);
         await this.settingsUI(interaction);
@@ -217,7 +217,7 @@ export default class StarboardCommand extends CustomizableCommand {
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.allow_self_star = args;
+        settings!.allow_self_star = args === 'Yes';
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
         await this.db.save(StarboardSettings, settings!);
@@ -247,7 +247,7 @@ export default class StarboardCommand extends CustomizableCommand {
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.remove_below_threshold = args;
+        settings!.remove_below_threshold = args === 'Yes';
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
         await this.db.save(StarboardSettings, settings!);

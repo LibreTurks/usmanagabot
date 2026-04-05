@@ -8,8 +8,8 @@ export class StarboardSettings {
     @PrimaryGeneratedColumn({ type: 'smallint' })
     id!: number;
 
-    @Column({ type: 'varchar', length: 20, nullable: false, default: 'Disabled' })
-    is_enabled!: string;
+    @Column({ type: 'boolean', nullable: false, default: false })
+    is_enabled!: boolean;
 
     @Column({ type: 'bigint', nullable: true, default: null })
     starboard_channel_id!: bigint | null;
@@ -24,11 +24,11 @@ export class StarboardSettings {
     @Column({ type: 'smallint', nullable: false, default: 3 })
     threshold!: number;
 
-    @Column({ type: 'varchar', length: 20, nullable: false, default: 'Not Allowed' })
-    allow_self_star!: string;
+    @Column({ type: 'boolean', nullable: false, default: false })
+    allow_self_star!: boolean;
 
-    @Column({ type: 'varchar', length: 20, nullable: false, default: 'Delete' })
-    remove_below_threshold!: string;
+    @Column({ type: 'boolean', nullable: false, default: true })
+    remove_below_threshold!: boolean;
 
     @ManyToOne(() => Users, { nullable: false, eager: true })
     @JoinColumn({ name: 'latest_action_from_user', referencedColumnName: 'id' })
