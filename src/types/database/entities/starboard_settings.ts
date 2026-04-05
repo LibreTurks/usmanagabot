@@ -18,7 +18,7 @@ export class StarboardSettings {
     @JoinColumn({ name: 'starboard_channel_id', referencedColumnName: 'cid' })
     starboard_channel!: Channels | null;
 
-    @Column({ type: 'varchar', length: 10, nullable: false, default: '⭐' })
+    @Column({ type: 'varchar', length: 100, nullable: false, default: '⭐' })
     emoji!: string;
 
     @Column({ type: 'smallint', nullable: false, default: 3 })

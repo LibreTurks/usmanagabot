@@ -2,15 +2,17 @@ import { StarboardSettings } from '@src/types/database/entities/starboard_settin
 import {
     SettingChannelMenuComponent,
     SettingGenericSettingComponent,
-    SettingStringSelectComponent,
+    SettingModalComponent,
 } from '@src/types/decorator/settingcomponents';
 import { CustomizableCommand } from '@src/types/structure/command';
 import {
     ChannelSelectMenuInteraction,
     ChannelType,
     ChatInputCommandInteraction,
+    ModalSubmitInteraction,
     SlashCommandBuilder,
     StringSelectMenuInteraction,
+    TextInputStyle,
 } from 'discord.js';
 import { CommandLoader } from '..';
 
@@ -110,34 +112,85 @@ export default class StarboardCommand extends CustomizableCommand {
         });
     }
 
-    @SettingStringSelectComponent({
+    @SettingModalComponent({
         database: StarboardSettings,
         database_key: 'threshold',
         format_specifier: '%s',
-        options: {
-            values: [{ label: '1' }, { label: '3' }, { label: '5' }, { label: '10' }],
-        },
+        inputs: [
+            {
+                id: 'threshold',
+                style: TextInputStyle.Short,
+                required: true,
+                placeholder: '3',
+                min_length: 1,
+                max_length: 3,
+            },
+        ],
     })
-    public async setThreshold(interaction: StringSelectMenuInteraction, args: string): Promise<void> {
+    public async setThreshold(interaction: ModalSubmitInteraction): Promise<void> {
         this.log('debug', 'settings.threshold.start', { name: this.name, guild: interaction.guild });
-        const settings = (await this.db.findOne(StarboardSettings, {
+        const settings = await this.db.findOne(StarboardSettings, {
             where: { from_guild: { gid: BigInt(interaction.guildId!) } },
-        }))!;
+        });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        if (args) {
-            settings.threshold = parseInt(args, 10);
-            settings.latest_action_from_user = user;
-            settings.timestamp = new Date();
-            await this.db.save(StarboardSettings, settings!);
-            await this.settingsUI(interaction);
-            this.log('debug', 'settings.threshold.success', {
-                name: this.name,
-                guild: interaction.guild,
-                threshold: settings.threshold,
+        const thresholdValue = interaction.fields.getTextInputValue('threshold');
+        const threshold = parseInt(thresholdValue, 10);
+
+        if (isNaN(threshold) || threshold < 1 || threshold > 100) {
+            this.warning = this.t.commands({
+                key: 'settings.setthreshold.invalid_value',
+                guild_id: BigInt(interaction.guildId!),
             });
+            await this.settingsUI(interaction);
             return;
         }
+
+        settings!.threshold = threshold;
+        settings!.latest_action_from_user = user;
+        settings!.timestamp = new Date();
+        await this.db.save(StarboardSettings, settings!);
+        await this.settingsUI(interaction);
+        this.log('debug', 'settings.threshold.success', {
+            name: this.name,
+            guild: interaction.guild,
+            threshold: settings!.threshold,
+        });
+    }
+
+    @SettingModalComponent({
+        database: StarboardSettings,
+        database_key: 'emoji',
+        format_specifier: '%s',
+        inputs: [
+            {
+                id: 'emoji',
+                style: TextInputStyle.Short,
+                required: true,
+                placeholder: '⭐',
+                max_length: 100,
+            },
+        ],
+    })
+    public async setEmoji(interaction: ModalSubmitInteraction): Promise<void> {
+        this.log('debug', 'settings.emoji.start', { name: this.name, guild: interaction.guild });
+        const settings = await this.db.findOne(StarboardSettings, {
+            where: { from_guild: { gid: BigInt(interaction.guildId!) } },
+        });
+        const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
+
+        const emojiValue = interaction.fields.getTextInputValue('emoji');
+
+        settings!.emoji = emojiValue;
+        settings!.latest_action_from_user = user;
+        settings!.timestamp = new Date();
+        await this.db.save(StarboardSettings, settings!);
+        await this.settingsUI(interaction);
+        this.log('debug', 'settings.emoji.success', {
+            name: this.name,
+            guild: interaction.guild,
+            emoji: settings!.emoji,
+        });
     }
 
     @SettingGenericSettingComponent({

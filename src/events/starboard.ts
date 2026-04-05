@@ -133,8 +133,6 @@ class StarboardReactionRemoveEvent extends BaseEvent<Events.MessageReactionRemov
             const reactionEmoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
             if (reactionEmoji !== settings.emoji) return;
 
-            if (!settings.remove_below_threshold) return;
-
             let starboard = await this.db.findOne(Starboard, {
                 where: { message_id: { message_id: BigInt(message.id) } },
             });
@@ -143,42 +141,34 @@ class StarboardReactionRemoveEvent extends BaseEvent<Events.MessageReactionRemov
 
             const reactionCount = reaction.count ?? 0;
 
-            if (reactionCount < settings.threshold) {
-                if (starboard.starboard_message_id) {
-                    const starboardChannel = await BotClient.client.guilds
-                        .fetch(message.guild.id)
-                        .then((g) => g.channels.fetch(settings.starboard_channel_id!.toString()));
+            starboard.star_count = reactionCount;
+            await this.db.save(Starboard, starboard);
 
-                    if (starboardChannel?.isTextBased()) {
-                        try {
-                            const existingMessage = await starboardChannel.messages.fetch(
-                                starboard.starboard_message_id.toString(),
-                            );
-                            await existingMessage.delete();
-                        } catch {}
-                    }
+            const starboardChannel = await BotClient.client.guilds
+                .fetch(message.guild.id)
+                .then((g) => g.channels.fetch(settings.starboard_channel_id!.toString()));
+
+            if (!starboardChannel?.isTextBased()) return;
+
+            if (reactionCount < settings.threshold && settings.remove_below_threshold) {
+                if (starboard.starboard_message_id) {
+                    try {
+                        const existingMessage = await starboardChannel.messages.fetch(
+                            starboard.starboard_message_id.toString(),
+                        );
+                        await existingMessage.delete();
+                    } catch {}
                 }
                 await this.db.remove(Starboard, starboard);
-            } else {
-                starboard.star_count = reactionCount;
-                await this.db.save(Starboard, starboard);
-
-                if (starboard.starboard_message_id) {
-                    const starboardChannel = await BotClient.client.guilds
-                        .fetch(message.guild.id)
-                        .then((g) => g.channels.fetch(settings.starboard_channel_id!.toString()));
-
-                    if (starboardChannel?.isTextBased()) {
-                        try {
-                            const existingMessage = await starboardChannel.messages.fetch(
-                                starboard.starboard_message_id.toString(),
-                            );
-                            await existingMessage.edit({
-                                content: `**${reactionCount}** ${reactionEmoji}`,
-                            });
-                        } catch {}
-                    }
-                }
+            } else if (starboard.starboard_message_id) {
+                try {
+                    const existingMessage = await starboardChannel.messages.fetch(
+                        starboard.starboard_message_id.toString(),
+                    );
+                    await existingMessage.edit({
+                        content: `**${reactionCount}** ${reactionEmoji}`,
+                    });
+                } catch {}
             }
         } catch (err) {
             this.log.error(err);

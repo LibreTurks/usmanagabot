@@ -16,8 +16,8 @@
         "settings": {
             "toggle": {
                 "description": "Enables or disables the starboard system.",
-                "display_name": "Starboard System",
-                "pretty_name": "Toggle Starboard System",
+                "display_name": "Enable Starboard",
+                "pretty_name": "Enable Starboard",
                 "parameters": {},
             },
             "setstarboardchannel": {
@@ -28,11 +28,29 @@
                 "parameters": {},
             },
             "setthreshold": {
-                "description": "Sets the number of stars required to post to starboard.",
+                "description": "Sets the number of stars required to post to starboard (1-100).",
                 "display_name": "Star Threshold",
-                "placeholder": "Select the star threshold",
-                "pretty_name": "Star Threshold",
-                "parameters": {},
+                "placeholder": "Enter a number between 1 and 100",
+                "pretty_name": "Star Threshold (1-100)",
+                "invalid_value": "Invalid threshold. Please enter a number between 1 and 100.",
+                "parameters": {
+                    "threshold": {
+                        "name": "Threshold",
+                        "placeholder": "3",
+                    },
+                },
+            },
+            "setemoji": {
+                "description": "Sets the emoji to use for starring (default: ⭐). Supports custom emoji.",
+                "display_name": "Star Emoji",
+                "placeholder": "Enter emoji (e.g., ⭐ or <:custom:123456>)",
+                "pretty_name": "Star Emoji",
+                "parameters": {
+                    "emoji": {
+                        "name": "Emoji",
+                        "placeholder": "⭐",
+                    },
+                },
             },
             "toggleselfstar": {
                 "description": "Allows users to star their own messages.",
@@ -42,8 +60,8 @@
             },
             "toggleremovebelowthreshold": {
                 "description": "Removes messages from starboard when they fall below the threshold.",
-                "display_name": "Remove Below Threshold",
-                "pretty_name": "Remove Below Threshold",
+                "display_name": "Delete When Below Threshold",
+                "pretty_name": "Delete When Below Threshold",
                 "parameters": {},
             },
         },
@@ -58,11 +76,15 @@
                         "start": "Starboard threshold change process initiated in guild \"{guild}\".",
                         "success": "Starboard threshold successfully changed to \"{threshold}\" in guild \"{guild}\".",
                     },
+                    "emoji": {
+                        "start": "Starboard emoji change process initiated in guild \"{guild}\".",
+                        "success": "Starboard emoji successfully changed to \"{emoji}\" in guild \"{guild}\".",
+                    },
                     "selfstar": {
                         "start": "Starboard self-star toggle process initiated in guild \"{guild}\".",
                         "success": "Starboard self-star setting successfully changed in guild \"{guild}\".",
                     },
-                    "remove": {
+                    "toggleremove": {
                         "start": "Starboard remove below threshold toggle process initiated in guild \"{guild}\".",
                         "success": "Starboard remove below threshold setting successfully changed in guild \"{guild}\".",
                     },

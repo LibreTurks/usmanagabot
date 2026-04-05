@@ -16,8 +16,8 @@
         "settings": {
             "toggle": {
                 "description": "Yıldız panosu sistemini etkinleştirir veya devre dışı bırakır.",
-                "display_name": "Yıldız Panosu Sistemi",
-                "pretty_name": "Yıldız Panosu Sistemini Aç/Kapat",
+                "display_name": "Yıldız Panosunu Etkinleştir",
+                "pretty_name": "Yıldız Panosunu Etkinleştir",
                 "parameters": {},
             },
             "setstarboardchannel": {
@@ -28,11 +28,29 @@
                 "parameters": {},
             },
             "setthreshold": {
-                "description": "Yıldız panosuna göndermek için gereken yıldız sayısını ayarlar.",
+                "description": "Yıldız panosuna göndermek için gereken yıldız sayısını ayarlar (1-100).",
                 "display_name": "Yıldız Eşiği",
-                "placeholder": "Yıldız eşiğini seçin",
-                "pretty_name": "Yıldız Eşiği",
-                "parameters": {},
+                "placeholder": "1 ile 100 arasında bir sayı girin",
+                "pretty_name": "Yıldız Eşiği (1-100)",
+                "invalid_value": "Geçersiz eşik değeri. Lütfen 1 ile 100 arasında bir sayı girin.",
+                "parameters": {
+                    "threshold": {
+                        "name": "Eşik",
+                        "placeholder": "3",
+                    },
+                },
+            },
+            "setemoji": {
+                "description": "Yıldızlamak için kullanılacak emojiyi ayarlar (varsayılan: ⭐). Özel emoji desteği.",
+                "display_name": "Yıldız Emojisi",
+                "placeholder": "Emoji girin (örn: ⭐ veya <:ozel:123456>)",
+                "pretty_name": "Yıldız Emojisi",
+                "parameters": {
+                    "emoji": {
+                        "name": "Emoji",
+                        "placeholder": "⭐",
+                    },
+                },
             },
             "toggleselfstar": {
                 "description": "Kullanıcıların kendi mesajlarına yıldız vermesine izin verir.",
@@ -42,8 +60,8 @@
             },
             "toggleremovebelowthreshold": {
                 "description": "Mesajlar eşiğin altına düştüğünde yıldız panosundan kaldırır.",
-                "display_name": "Eşik Altında Kaldır",
-                "pretty_name": "Eşik Altında Kaldır",
+                "display_name": "Eşik Altındayken Sil",
+                "pretty_name": "Eşik Altındayken Sil",
                 "parameters": {},
             },
         },
@@ -58,11 +76,15 @@
                         "start": "Yıldız panosu eşik değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
                         "success": "Yıldız panosu eşiği \"{guild}\" sunucusunda \"{threshold}\" olarak başarıyla değiştirildi.",
                     },
+                    "emoji": {
+                        "start": "Yıldız panosu emoji değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu emojisi \"{guild}\" sunucusunda \"{emoji}\" olarak başarıyla değiştirildi.",
+                    },
                     "selfstar": {
                         "start": "Yıldız panosu kendine yıldız verme ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
                         "success": "Yıldız panosu kendine yıldız verme ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
                     },
-                    "remove": {
+                    "toggleremove": {
                         "start": "Yıldız panosu eşik altında kaldırma ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
                         "success": "Yıldız panosu eşik altında kaldırma ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
                     },
