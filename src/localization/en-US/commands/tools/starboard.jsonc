@@ -3,10 +3,8 @@
     "command": {
         "settings": {
             "toggle": {
-                "display_name": "Enable Starboard"
-            }
-        },
-    },
+                "display_name": "Enable Starboard",
+            },
             "toggleselfstar": {
                 "display_name": "Allow Self-Starring",
             },
@@ -31,7 +29,7 @@
         "settings": {
             "toggle": {
                 "description": "Enables or disables the starboard system.",
-                "display_name": "Active",
+                "display_name": "Enable Starboard",
                 "pretty_name": "Enable Starboard",
                 "parameters": {},
             },

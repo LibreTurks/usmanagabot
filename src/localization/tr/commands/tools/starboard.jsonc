@@ -3,10 +3,8 @@
     "command": {
         "settings": {
             "toggle": {
-                "display_name": "Yıldız Panosunu Etkinleştir"
-            }
-        },
-    },
+                "display_name": "Yıldız Panosunu Etkinleştir",
+            },
             "toggleselfstar": {
                 "display_name": "Kendine Yıldız Vermeye İzin Ver",
             },
@@ -31,7 +29,7 @@
         "settings": {
             "toggle": {
                 "description": "Yıldız panosu sistemini etkinleştirir veya devre dışı bırakır.",
-                "display_name": "Aktif",
+                "display_name": "Yıldız Panosunu Etkinleştir",
                 "pretty_name": "Yıldız Panosunu Etkinleştir",
                 "parameters": {},
             },

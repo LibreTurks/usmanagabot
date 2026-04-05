@@ -373,7 +373,6 @@ export abstract class CustomizableCommand extends BaseCommand {
                 let key = this.t.commands({ key: setting.display_name, guild_id: BigInt(interaction.guildId!) });
                 let value;
                 if (typeof row === 'boolean') {
-                    key = this.t.system({ caller: 'labels', key: 'active', guild_id: BigInt(interaction.guildId!) });
                     value = row
                         ? `:green_circle: ${this.t.system({ caller: 'buttons', key: 'yes', guild_id: BigInt(interaction.guildId!) })}`
                         : `:red_circle: ${this.t.system({ caller: 'buttons', key: 'no', guild_id: BigInt(interaction.guildId!) })}`;
@@ -385,20 +384,20 @@ export abstract class CustomizableCommand extends BaseCommand {
                                 : row.map((val) => format(setting.format_specifier, val)).join(', ')
                             : `:orange_circle: ${this.t.commands({ caller: 'settings', key: 'execute.not_set', guild_id: BigInt(interaction.guildId!) })}`
                         : this.t.commands({
-                            caller: 'settings',
-                            key: 'execute.view_in_edit_mode',
-                            guild_id: BigInt(interaction.guildId!),
-                        });
+                              caller: 'settings',
+                              key: 'execute.view_in_edit_mode',
+                              guild_id: BigInt(interaction.guildId!),
+                          });
                 } else {
                     value = setting.database_key
                         ? row
                             ? format(setting.format_specifier, row ?? '')
                             : `:orange_circle: ${this.t.commands({ caller: 'settings', key: 'execute.not_set', guild_id: BigInt(interaction.guildId!) })}`
                         : this.t.commands({
-                            caller: 'settings',
-                            key: 'execute.view_in_edit_mode',
-                            guild_id: BigInt(interaction.guildId!),
-                        });
+                              caller: 'settings',
+                              key: 'execute.view_in_edit_mode',
+                              guild_id: BigInt(interaction.guildId!),
+                          });
                 }
                 ui.addFields({
                     name: key,
@@ -451,15 +450,15 @@ export abstract class CustomizableCommand extends BaseCommand {
                             user: user
                                 ? user.tag
                                 : this.t.commands({
-                                    key: 'execute.unknown_user',
-                                    guild_id: BigInt(interaction.guildId!),
-                                }),
+                                      key: 'execute.unknown_user',
+                                      guild_id: BigInt(interaction.guildId!),
+                                  }),
                             date: date
                                 ? date
                                 : this.t.commands({
-                                    key: 'execute.unknown_date',
-                                    guild_id: BigInt(interaction.guildId!),
-                                }),
+                                      key: 'execute.unknown_date',
+                                      guild_id: BigInt(interaction.guildId!),
+                                  }),
                         },
                         guild_id: BigInt(interaction.guildId!),
                     }),

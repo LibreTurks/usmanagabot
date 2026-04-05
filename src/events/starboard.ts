@@ -6,6 +6,16 @@ import { Starboard } from '@src/types/database/entities/starboard';
 import { StarboardSettings } from '@src/types/database/entities/starboard_settings';
 import { Messages } from '@src/types/database/entities/messages';
 
+function toBool(value: unknown): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        return ['yes', 'true', '1', 'on', 'enabled'].includes(normalized);
+    }
+    if (typeof value === 'number') return value !== 0;
+    return false;
+}
+
 class StarboardReactionAddEvent extends BaseEvent<Events.MessageReactionAdd> {
     constructor() {
         super({ enabled: true, type: Events.MessageReactionAdd, once: false });
@@ -22,12 +32,17 @@ class StarboardReactionAddEvent extends BaseEvent<Events.MessageReactionAdd> {
             if (!guild) return;
 
             const settings = await this.db.findOne(StarboardSettings, { where: { from_guild: { id: guild.id } } });
-            if (!settings?.is_enabled || !settings?.starboard_channel_id) return;
+            if (!toBool((settings as unknown as Record<string, unknown>).is_enabled) || !settings?.starboard_channel_id)
+                return;
 
             const reactionEmoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
             if (reactionEmoji !== settings.emoji) return;
 
-            if (!settings.allow_self_star && message.author?.id === user.id) return;
+            if (
+                !toBool((settings as unknown as Record<string, unknown>).allow_self_star) &&
+                message.author?.id === user.id
+            )
+                return;
 
             await RegisterFact<User>(user as User, undefined);
             await RegisterFact<Channel>(message.channel as Channel, undefined);
@@ -128,7 +143,8 @@ class StarboardReactionRemoveEvent extends BaseEvent<Events.MessageReactionRemov
             if (!guild) return;
 
             const settings = await this.db.findOne(StarboardSettings, { where: { from_guild: { id: guild.id } } });
-            if (!settings?.is_enabled || !settings?.starboard_channel_id) return;
+            if (!toBool((settings as unknown as Record<string, unknown>).is_enabled) || !settings?.starboard_channel_id)
+                return;
 
             const reactionEmoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
             if (reactionEmoji !== settings.emoji) return;
@@ -150,7 +166,10 @@ class StarboardReactionRemoveEvent extends BaseEvent<Events.MessageReactionRemov
 
             if (!starboardChannel?.isTextBased()) return;
 
-            if (reactionCount < settings.threshold && settings.remove_below_threshold) {
+            if (
+                reactionCount < settings.threshold &&
+                toBool((settings as unknown as Record<string, unknown>).remove_below_threshold)
+            ) {
                 if (starboard.starboard_message_id) {
                     try {
                         const existingMessage = await starboardChannel.messages.fetch(
