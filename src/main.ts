@@ -19,7 +19,4 @@ import { Translator } from '@services/translator';
     await Database.init();
     await BotClient.init(Config.current_botcfg.token);
     Logger.send('services', 'system', 'info', 'started', { name: pkg.name, version: pkg.version });
-
-    await Bun.cron('./src/crons/verification.ts', '* * * * *', 'verification-check');
-    await Bun.cron('./src/crons/earthquake.ts', '*/5 * * * *', 'earthquake-notify');
 })();

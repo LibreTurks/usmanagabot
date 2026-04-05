@@ -20,6 +20,7 @@
     },
     "homepage": "https://github.com/LibreTurks/usmanagabot#readme",
     "dependencies": {
+        "cron": "^4.4.0",
         "dayjs": "^1.11.19",
         "discord.js": "^14.25.1",
         "glob": "^11.1.0",
