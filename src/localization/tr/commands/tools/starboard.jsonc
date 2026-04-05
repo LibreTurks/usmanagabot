@@ -3,7 +3,7 @@
     "command": {
         "settings": {
             "toggle": {
-                "display_name": "Aktif",
+                "display_name": "Yıldız Panosunu Etkinleştir",
             },
         },
     },

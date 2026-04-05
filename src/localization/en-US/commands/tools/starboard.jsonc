@@ -3,7 +3,7 @@
     "command": {
         "settings": {
             "toggle": {
-                "display_name": "Active",
+                "display_name": "Enable Starboard",
             },
         },
     },
