@@ -1,0 +1,113 @@
+{
+    "$schema": "../../../../types/structure/schemas/command.json",
+    "starboard": {
+        "name": "starboard",
+        "pretty_name": "Yıldız Panosu",
+        "description": "Sunucunuz için yıldız panosu sistemini yapılandırır.",
+        "help": "Sunucunuz için yıldız panosu sistemini yapılandırır.",
+        "execute": {},
+        "subcommands": {
+            "settings": {
+                "name": "ayarlar",
+                "description": "Yıldız panosu ayarlar menüsünü açar.",
+            },
+        },
+        "events": {},
+        "settings": {
+            "toggle": {
+                "description": "Yıldız panosu sistemini etkinleştirir veya devre dışı bırakır.",
+                "display_name": "Yıldız Panosunu Etkinleştir",
+                "pretty_name": "Yıldız Panosunu Etkinleştir",
+                "parameters": {},
+            },
+            "setstarboardchannel": {
+                "description": "Yıldız panosu mesajlarının gönderileceği kanalı ayarlar.",
+                "display_name": "Yıldız Panosu Kanalı",
+                "placeholder": "Yıldız panosu kanalını seçin",
+                "pretty_name": "Yıldız Panosu Kanalı",
+                "parameters": {},
+            },
+            "setthreshold": {
+                "description": "Yıldız panosuna göndermek için gereken yıldız sayısını ayarlar (1-100).",
+                "display_name": "Yıldız Eşiği",
+                "placeholder": "1 ile 100 arasında bir sayı girin",
+                "pretty_name": "Yıldız Eşiği (1-100)",
+                "invalid_value": "Geçersiz eşik değeri. Lütfen 1 ile 100 arasında bir sayı girin.",
+                "parameters": {
+                    "threshold": {
+                        "name": "Eşik",
+                        "placeholder": "3",
+                    },
+                },
+            },
+            "setemoji": {
+                "description": "Yıldızlamak için kullanılacak emojiyi ayarlar (varsayılan: ⭐). Özel emoji desteği.",
+                "display_name": "Yıldız Emojisi",
+                "placeholder": "Emoji girin (örn: ⭐ veya <:ozel:123456>)",
+                "pretty_name": "Yıldız Emojisi",
+                "parameters": {
+                    "emoji": {
+                        "name": "Emoji",
+                        "placeholder": "⭐",
+                    },
+                },
+            },
+            "toggleselfstar": {
+                "description": "Kullanıcıların kendi mesajlarına yıldız vermesine izin verir.",
+                "display_name": "Kendine Yıldız Vermeye İzin Ver",
+                "pretty_name": "Kendine Yıldız Vermeye İzin Ver",
+                "parameters": {},
+            },
+            "toggleremovebelowthreshold": {
+                "description": "Mesajlar eşiğin altına düştüğünde yıldız panosundan kaldırır.",
+                "display_name": "Eşik Altındayken Sil",
+                "pretty_name": "Eşik Altındayken Sil",
+                "parameters": {},
+            },
+        },
+        "logging": {
+            "debug": {
+                "settings": {
+                    "channel": {
+                        "start": "Yıldız panosu kanalı değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu kanalı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "threshold": {
+                        "start": "Yıldız panosu eşik değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu eşiği \"{guild}\" sunucusunda \"{threshold}\" olarak başarıyla değiştirildi.",
+                    },
+                    "emoji": {
+                        "start": "Yıldız panosu emoji değiştirme işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu emojisi \"{guild}\" sunucusunda \"{emoji}\" olarak başarıyla değiştirildi.",
+                    },
+                    "selfstar": {
+                        "start": "Yıldız panosu kendine yıldız verme ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu kendine yıldız verme ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "toggleremove": {
+                        "start": "Yıldız panosu eşik altında kaldırma ayarlama işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu eşik altında kaldırma ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
+                    },
+                    "toggle": {
+                        "start": "Yıldız panosu sistemi etkinleştirme/devre dışı bırakma işlemi \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu sistemi \"{guild}\" sunucusunda \"{toggle}\" olarak başarıyla güncellendi.",
+                    },
+                },
+                "prepare": {
+                    "start": "\"Yıldız Panosu\" komutu \"{guild}\" için hazırlanıyor.",
+                    "success": "\"Yıldız Panosu\" komutu \"{guild}\" için başarıyla hazırlandı.",
+                },
+            },
+            "info": {},
+            "warn": {},
+            "error": {},
+            "log": {
+                "prepare": {
+                    "database": {
+                        "success": "\"Yıldız Panosu\" komut ayarları \"{guild}\" için veritabanında başarıyla işlendi.",
+                    },
+                },
+            },
+        },
+    },
+}

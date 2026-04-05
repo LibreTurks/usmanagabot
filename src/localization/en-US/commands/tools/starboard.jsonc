@@ -1,0 +1,113 @@
+{
+    "$schema": "../../../../types/structure/schemas/command.json",
+    "starboard": {
+        "name": "starboard",
+        "pretty_name": "Starboard",
+        "description": "Configure the starboard system for your server.",
+        "help": "Configure the starboard system for your server.",
+        "execute": {},
+        "subcommands": {
+            "settings": {
+                "name": "settings",
+                "description": "Opens the starboard settings menu.",
+            },
+        },
+        "events": {},
+        "settings": {
+            "toggle": {
+                "description": "Enables or disables the starboard system.",
+                "display_name": "Enable Starboard",
+                "pretty_name": "Enable Starboard",
+                "parameters": {},
+            },
+            "setstarboardchannel": {
+                "description": "Sets the channel where starboard messages will be posted.",
+                "display_name": "Starboard Channel",
+                "placeholder": "Select the starboard channel",
+                "pretty_name": "Starboard Channel",
+                "parameters": {},
+            },
+            "setthreshold": {
+                "description": "Sets the number of stars required to post to starboard (1-100).",
+                "display_name": "Star Threshold",
+                "placeholder": "Enter a number between 1 and 100",
+                "pretty_name": "Star Threshold (1-100)",
+                "invalid_value": "Invalid threshold. Please enter a number between 1 and 100.",
+                "parameters": {
+                    "threshold": {
+                        "name": "Threshold",
+                        "placeholder": "3",
+                    },
+                },
+            },
+            "setemoji": {
+                "description": "Sets the emoji to use for starring (default: ⭐). Supports custom emoji.",
+                "display_name": "Star Emoji",
+                "placeholder": "Enter emoji (e.g., ⭐ or <:custom:123456>)",
+                "pretty_name": "Star Emoji",
+                "parameters": {
+                    "emoji": {
+                        "name": "Emoji",
+                        "placeholder": "⭐",
+                    },
+                },
+            },
+            "toggleselfstar": {
+                "description": "Allows users to star their own messages.",
+                "display_name": "Allow Self-Starring",
+                "pretty_name": "Allow Self-Starring",
+                "parameters": {},
+            },
+            "toggleremovebelowthreshold": {
+                "description": "Removes messages from starboard when they fall below the threshold.",
+                "display_name": "Delete When Below Threshold",
+                "pretty_name": "Delete When Below Threshold",
+                "parameters": {},
+            },
+        },
+        "logging": {
+            "debug": {
+                "settings": {
+                    "channel": {
+                        "start": "Starboard channel change process initiated in guild \"{guild}\".",
+                        "success": "Starboard channel successfully changed in guild \"{guild}\".",
+                    },
+                    "threshold": {
+                        "start": "Starboard threshold change process initiated in guild \"{guild}\".",
+                        "success": "Starboard threshold successfully changed to \"{threshold}\" in guild \"{guild}\".",
+                    },
+                    "emoji": {
+                        "start": "Starboard emoji change process initiated in guild \"{guild}\".",
+                        "success": "Starboard emoji successfully changed to \"{emoji}\" in guild \"{guild}\".",
+                    },
+                    "selfstar": {
+                        "start": "Starboard self-star toggle process initiated in guild \"{guild}\".",
+                        "success": "Starboard self-star setting successfully changed in guild \"{guild}\".",
+                    },
+                    "toggleremove": {
+                        "start": "Starboard remove below threshold toggle process initiated in guild \"{guild}\".",
+                        "success": "Starboard remove below threshold setting successfully changed in guild \"{guild}\".",
+                    },
+                    "toggle": {
+                        "start": "Starboard system enable/disable process initiated in guild \"{guild}\".",
+                        "success": "Starboard system successfully updated to \"{toggle}\" in guild \"{guild}\".",
+                    },
+                },
+                "prepare": {
+                    "start": "Preparing Starboard command for guild \"{guild}\".",
+                    "success": "Starboard command for guild \"{guild}\" prepared successfully.",
+                },
+            },
+            "info": {},
+            "warn": {},
+            "error": {},
+            "log": {
+                "prepare": {
+                    "database": {
+                        "success": "Starboard command settings for guild \"{guild}\" successfully processed into the database.",
+                    },
+                },
+            },
+        },
+    },
+}

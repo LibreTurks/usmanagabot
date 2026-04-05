@@ -99,8 +99,7 @@ function generateSettingComponent(
             pretty: `settings.${pretty_key}.pretty_name`,
             database: o.database,
             database_key: o.database_key,
-            display_name:
-                pretty_key == 'toggle' ? 'command.settings.toggle.display_name' : `settings.${pretty_key}.display_name`,
+            display_name: `settings.${pretty_key}.display_name`,
             description: `settings.${pretty_key}.description`,
             format_specifier: o.format_specifier ?? 'command.settings.view_in_edit_mode',
             db_column_is_array: o.db_column_is_array ?? false,
