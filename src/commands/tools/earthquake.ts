@@ -2,7 +2,6 @@ import { In } from 'typeorm';
 import { normalizeText } from '@utils/string';
 import { BotClient } from '@services/client';
 import { Earthquake, EarthquakeLogs, EarthquakeSubscription } from '@src/types/database/entities/earthquake';
-import { Cron } from '@src/types/decorator/cronjob';
 import {
     SettingChannelMenuComponent,
     SettingGenericSettingComponent,
@@ -269,13 +268,12 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
     }
 
     /**
-     * Executes the earthquake notification cron job.
-     * This method runs every 5 minutes as defined by the `@Cron` decorator.
+     * Executes the earthquake notification job.
+     * This method runs every 5 minutes via Bun.cron.
      * It fetches data for all enabled guilds, checks for new earthquakes exceeding the magnitude limit,
      * reverse-geocodes the location, and sends a notification embed to the configured channel.
      * It also manages a log of delivered earthquakes to avoid duplicate notifications and prunes old logs.
      */
-    @Cron({ schedule: '*/5 * * * *' })
     public async cronjob(): Promise<void> {
         this.log('debug', 'cronjob.start');
         const earthquake = await this.db.find(Earthquake, { where: { is_enabled: true } });

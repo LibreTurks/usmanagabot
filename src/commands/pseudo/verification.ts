@@ -2,7 +2,6 @@ import { BotClient } from '@services/client';
 import { Guilds } from '@src/types/database/entities/guilds';
 import { Verification, VerificationSystem } from '@src/types/database/entities/verification';
 import { ChainEvent } from '@src/types/decorator/chainevent';
-import { Cron } from '@src/types/decorator/cronjob';
 import {
     SettingChannelMenuComponent,
     SettingGenericSettingComponent,
@@ -63,12 +62,11 @@ export default class VerificationCommand extends CustomizableCommand {
 
     // =========================== EXECUTE ============================ //
     /**
-     * A periodic cron job that checks the status of members currently in verification.
-     * This method runs every minute as defined by the `@Cron` decorator.
+     * A periodic job that checks the status of members currently in verification.
+     * This method runs every minute via Bun.cron.
      * It iterates through all tracked verifications and removes the verification role from members
      * whose accounts have now reached the minimum required age.
      */
-    @Cron({ schedule: '* * * * *' })
     public async routineCheck(): Promise<void> {
         this.log('debug', 'cronjob.start');
         const guilds = await this.db.find(Guilds);
