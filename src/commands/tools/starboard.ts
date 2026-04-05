@@ -1,6 +1,7 @@
 import { StarboardSettings } from '@src/types/database/entities/starboard_settings';
 import {
     SettingChannelMenuComponent,
+    SettingGenericSettingComponent,
     SettingModalComponent,
     SettingStringSelectComponent,
 } from '@src/types/decorator/settingcomponents';
@@ -59,25 +60,19 @@ export default class StarboardCommand extends CustomizableCommand {
         }
     }
 
-    @SettingStringSelectComponent({
+    @SettingGenericSettingComponent({
         database: StarboardSettings,
         database_key: 'is_enabled',
         format_specifier: '%s',
-        options: {
-            values: [
-                { label: 'Yes', description: 'Enable the starboard system' },
-                { label: 'No', description: 'Disable the starboard system' },
-            ],
-        },
     })
-    public async toggle(interaction: StringSelectMenuInteraction, args: string): Promise<void> {
+    public async toggle(interaction: StringSelectMenuInteraction): Promise<void> {
         this.log('debug', 'settings.toggle.start', { name: this.name, guild: interaction.guild });
         const settings = await this.db.findOne(StarboardSettings, {
             where: { from_guild: { gid: BigInt(interaction.guildId!) } },
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.is_enabled = args === 'Yes';
+        settings!.is_enabled = !settings!.is_enabled;
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
         this.enabled = settings!.is_enabled;
@@ -199,25 +194,19 @@ export default class StarboardCommand extends CustomizableCommand {
         });
     }
 
-    @SettingStringSelectComponent({
+    @SettingGenericSettingComponent({
         database: StarboardSettings,
         database_key: 'allow_self_star',
         format_specifier: '%s',
-        options: {
-            values: [
-                { label: 'Yes', description: 'Users can star their own messages' },
-                { label: 'No', description: 'Users cannot star their own messages' },
-            ],
-        },
     })
-    public async toggleSelfStar(interaction: StringSelectMenuInteraction, args: string): Promise<void> {
+    public async toggleSelfStar(interaction: StringSelectMenuInteraction): Promise<void> {
         this.log('debug', 'settings.toggleselfstar.start', { name: this.name, guild: interaction.guild });
         const settings = await this.db.findOne(StarboardSettings, {
             where: { from_guild: { gid: BigInt(interaction.guildId!) } },
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.allow_self_star = args === 'Yes';
+        settings!.allow_self_star = !settings!.allow_self_star;
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
         await this.db.save(StarboardSettings, settings!);
@@ -229,25 +218,19 @@ export default class StarboardCommand extends CustomizableCommand {
         });
     }
 
-    @SettingStringSelectComponent({
+    @SettingGenericSettingComponent({
         database: StarboardSettings,
         database_key: 'remove_below_threshold',
         format_specifier: '%s',
-        options: {
-            values: [
-                { label: 'Yes', description: 'Remove messages when below threshold' },
-                { label: 'No', description: 'Keep messages even when below threshold' },
-            ],
-        },
     })
-    public async toggleRemoveBelowThreshold(interaction: StringSelectMenuInteraction, args: string): Promise<void> {
+    public async toggleRemoveBelowThreshold(interaction: StringSelectMenuInteraction): Promise<void> {
         this.log('debug', 'settings.toggleremove.start', { name: this.name, guild: interaction.guild });
         const settings = await this.db.findOne(StarboardSettings, {
             where: { from_guild: { gid: BigInt(interaction.guildId!) } },
         });
         const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
 
-        settings!.remove_below_threshold = args === 'Yes';
+        settings!.remove_below_threshold = !settings!.remove_below_threshold;
         settings!.latest_action_from_user = user;
         settings!.timestamp = new Date();
         await this.db.save(StarboardSettings, settings!);
