@@ -373,6 +373,13 @@ export abstract class CustomizableCommand extends BaseCommand {
                 let key = this.t.commands({ key: setting.display_name, guild_id: BigInt(interaction.guildId!) });
                 let value;
                 if (typeof row === 'boolean') {
+                    if (key === setting.display_name) {
+                        key = this.t.system({
+                            caller: 'labels',
+                            key: 'active',
+                            guild_id: BigInt(interaction.guildId!),
+                        });
+                    }
                     value = row
                         ? `:green_circle: ${this.t.system({ caller: 'buttons', key: 'yes', guild_id: BigInt(interaction.guildId!) })}`
                         : `:red_circle: ${this.t.system({ caller: 'buttons', key: 'no', guild_id: BigInt(interaction.guildId!) })}`;

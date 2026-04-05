@@ -16,16 +16,6 @@ import {
 } from 'discord.js';
 import { CommandLoader } from '..';
 
-function toBool(value: unknown): boolean {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-        const normalized = value.trim().toLowerCase();
-        return ['yes', 'true', '1', 'on', 'enabled'].includes(normalized);
-    }
-    if (typeof value === 'number') return value !== 0;
-    return false;
-}
-
 export default class StarboardCommand extends CustomizableCommand {
     constructor() {
         super({ name: 'starboard' });
@@ -53,24 +43,8 @@ export default class StarboardCommand extends CustomizableCommand {
             new_settings.from_guild = guild!;
             settings = await this.db.save(StarboardSettings, new_settings);
             this.log('log', 'prepare.database.success', { name: this.name, guild: guild_id });
-        } else {
-            const enabled = toBool((settings as unknown as Record<string, unknown>).is_enabled);
-            const allowSelfStar = toBool((settings as unknown as Record<string, unknown>).allow_self_star);
-            const removeBelow = toBool((settings as unknown as Record<string, unknown>).remove_below_threshold);
-
-            if (
-                typeof (settings as unknown as Record<string, unknown>).is_enabled !== 'boolean' ||
-                typeof (settings as unknown as Record<string, unknown>).allow_self_star !== 'boolean' ||
-                typeof (settings as unknown as Record<string, unknown>).remove_below_threshold !== 'boolean'
-            ) {
-                settings.is_enabled = enabled;
-                settings.allow_self_star = allowSelfStar;
-                settings.remove_below_threshold = removeBelow;
-                settings.timestamp = new Date();
-                await this.db.save(StarboardSettings, settings);
-            }
         }
-        this.enabled = toBool((settings as unknown as Record<string, unknown>).is_enabled);
+        this.enabled = settings.is_enabled;
         this.log('debug', 'prepare.success', { name: this.name, guild: guild_id });
     }
 

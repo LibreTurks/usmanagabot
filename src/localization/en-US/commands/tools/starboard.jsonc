@@ -1,18 +1,5 @@
 {
     "$schema": "../../../../types/structure/schemas/command.json",
-    "command": {
-        "settings": {
-            "toggle": {
-                "display_name": "Enable Starboard",
-            },
-            "toggleselfstar": {
-                "display_name": "Allow Self-Starring",
-            },
-            "toggleremovebelowthreshold": {
-                "display_name": "Delete When Below Threshold",
-            },
-        },
-    },
     "starboard": {
         "name": "starboard",
         "pretty_name": "Starboard",
