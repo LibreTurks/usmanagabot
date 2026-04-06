@@ -40,6 +40,7 @@ export default class StarboardCommand extends CustomizableCommand {
             new_settings.threshold = 3;
             new_settings.allow_self_star = false;
             new_settings.remove_below_threshold = true;
+            new_settings.allow_bot_messages = false;
             new_settings.latest_action_from_user = system_user!;
             new_settings.from_guild = guild!;
             settings = await this.db.save(StarboardSettings, new_settings);
@@ -239,6 +240,30 @@ export default class StarboardCommand extends CustomizableCommand {
             name: this.name,
             guild: interaction.guild,
             remove_below_threshold: settings!.remove_below_threshold,
+        });
+    }
+
+    @SettingGenericSettingComponent({
+        database: StarboardSettings,
+        database_key: 'allow_bot_messages',
+        format_specifier: '%s',
+    })
+    public async toggleAllowBotMessages(interaction: StringSelectMenuInteraction): Promise<void> {
+        this.log('debug', 'settings.toggleallowbot.start', { name: this.name, guild: interaction.guild });
+        const settings = await this.db.findOne(StarboardSettings, {
+            where: { from_guild: { gid: BigInt(interaction.guildId!) } },
+        });
+        const user = (await this.db.getUser(BigInt(interaction.user.id)))!;
+
+        settings!.allow_bot_messages = !settings!.allow_bot_messages;
+        settings!.latest_action_from_user = user;
+        settings!.timestamp = new Date();
+        await this.db.save(StarboardSettings, settings!);
+        await this.settingsUI(interaction);
+        this.log('debug', 'settings.toggleallowbot.success', {
+            name: this.name,
+            guild: interaction.guild,
+            allow_bot_messages: settings!.allow_bot_messages,
         });
     }
 }

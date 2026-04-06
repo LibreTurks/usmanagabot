@@ -30,6 +30,9 @@ export class StarboardSettings {
     @Column({ type: 'boolean', nullable: false, default: true })
     remove_below_threshold!: boolean;
 
+    @Column({ type: 'boolean', nullable: false, default: false })
+    allow_bot_messages!: boolean;
+
     @ManyToOne(() => Users, { nullable: false, eager: true })
     @JoinColumn({ name: 'latest_action_from_user', referencedColumnName: 'id' })
     latest_action_from_user!: Users;

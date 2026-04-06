@@ -64,6 +64,12 @@
                 "pretty_name": "Eşik Altındayken Sil",
                 "parameters": {},
             },
+            "toggleallowbotmessages": {
+                "description": "Diğer botların mesajlarının yıldızlanmasına izin verir.",
+                "display_name": "Bot Mesajlarına İzin Ver",
+                "pretty_name": "Bot Mesajlarına İzin Ver",
+                "parameters": {},
+            },
         },
         "logging": {
             "debug": {
@@ -91,6 +97,10 @@
                     "toggle": {
                         "start": "Yıldız panosu sistemi etkinleştirme/devre dışı bırakma işlemi \"{guild}\" sunucusunda başlatıldı.",
                         "success": "Yıldız panosu sistemi \"{guild}\" sunucusunda \"{toggle}\" olarak başarıyla güncellendi.",
+                    },
+                    "toggleallowbot": {
+                        "start": "Yıldız panosu bot mesajları izin ayarı süreci \"{guild}\" sunucusunda başlatıldı.",
+                        "success": "Yıldız panosu bot mesajları izin ayarı \"{guild}\" sunucusunda başarıyla değiştirildi.",
                     },
                 },
                 "prepare": {

@@ -64,6 +64,12 @@
                 "pretty_name": "Delete When Below Threshold",
                 "parameters": {},
             },
+            "toggleallowbotmessages": {
+                "description": "Allows starring messages from other bots.",
+                "display_name": "Allow Bot Messages",
+                "pretty_name": "Allow Bot Messages",
+                "parameters": {},
+            },
         },
         "logging": {
             "debug": {
@@ -87,6 +93,10 @@
                     "toggleremove": {
                         "start": "Starboard remove below threshold toggle process initiated in guild \"{guild}\".",
                         "success": "Starboard remove below threshold setting successfully changed in guild \"{guild}\".",
+                    },
+                    "toggleallowbot": {
+                        "start": "Starboard allow bot messages toggle process initiated in guild \"{guild}\".",
+                        "success": "Starboard allow bot messages setting successfully changed in guild \"{guild}\".",
                     },
                     "toggle": {
                         "start": "Starboard system enable/disable process initiated in guild \"{guild}\".",
