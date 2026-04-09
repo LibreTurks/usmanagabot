@@ -97,6 +97,13 @@ class StarboardReactionAddEvent extends BaseEvent<Events.MessageReactionAdd> {
 
             if (message.attachments.size > 0) {
                 embed.image = { url: message.attachments.first()!.url };
+            } else if (message.embeds.length > 0) {
+                const firstEmbed = message.embeds[0];
+                embed.image = firstEmbed.thumbnail
+                    ? { url: firstEmbed.thumbnail.url }
+                    : firstEmbed.image
+                      ? { url: firstEmbed.image.url }
+                      : undefined;
             }
 
             if (starboard.starboard_message_id) {
