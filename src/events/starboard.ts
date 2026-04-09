@@ -18,16 +18,12 @@ class StarboardReactionAddEvent extends BaseEvent<Events.MessageReactionAdd> {
             const message = await reaction.message.fetch();
             if (!message.guild?.id) return;
 
-            // Always exclude UsmanAga's own messages
-            if (message.author?.id === BotClient.client.user?.id) return;
-
             const guild = await this.db.getGuild(BigInt(message.guild.id));
             if (!guild) return;
 
             const settings = await this.db.findOne(StarboardSettings, { where: { from_guild: { id: guild.id } } });
             if (!settings?.is_enabled || !settings?.starboard_channel_id) return;
 
-            // Check bot message setting for other bots
             if (message.author?.bot && !settings.allow_bot_messages) return;
 
             const reactionEmoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
@@ -47,8 +43,20 @@ class StarboardReactionAddEvent extends BaseEvent<Events.MessageReactionAdd> {
             });
 
             if (!starboard) {
-                const msgRecord = await this.db.findOne(Messages, { where: { message_id: BigInt(message.id) } });
-                if (!msgRecord) return;
+                let msgRecord = await this.db.findOne(Messages, { where: { message_id: BigInt(message.id) } });
+
+                if (!msgRecord) {
+                    const userRecord = await RegisterFact<User>(message.author!, undefined);
+                    const channelRecord = await RegisterFact<Channel>(message.channel as Channel, undefined);
+
+                    msgRecord = new Messages();
+                    msgRecord.message_id = BigInt(message.id);
+                    msgRecord.timestamp = new Date(message.createdTimestamp);
+                    msgRecord.from_user = userRecord as any;
+                    msgRecord.from_channel = channelRecord as any;
+                    msgRecord.from_guild = guild;
+                    await this.db.save(Messages, msgRecord);
+                }
 
                 const userRecord = await RegisterFact<User>(user as User, undefined);
                 const channelRecord = await RegisterFact<Channel>(message.channel as Channel, undefined);
@@ -140,16 +148,12 @@ class StarboardReactionRemoveEvent extends BaseEvent<Events.MessageReactionRemov
             const message = await reaction.message.fetch();
             if (!message.guild?.id) return;
 
-            // Always exclude UsmanAga's own messages
-            if (message.author?.id === BotClient.client.user?.id) return;
-
             const guild = await this.db.getGuild(BigInt(message.guild.id));
             if (!guild) return;
 
             const settings = await this.db.findOne(StarboardSettings, { where: { from_guild: { id: guild.id } } });
             if (!settings?.is_enabled || !settings?.starboard_channel_id) return;
 
-            // Check bot message setting for other bots
             if (message.author?.bot && !settings.allow_bot_messages) return;
 
             const reactionEmoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
