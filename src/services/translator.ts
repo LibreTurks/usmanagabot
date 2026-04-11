@@ -146,39 +146,39 @@ export class Translator {
     public static generateQueryFunc(o: { caller: string; lang?: SupportedLanguages }) {
         const makeQuery =
             (namespace: 'commands' | 'events' | 'services' | 'system') =>
-            (
-                q: Partial<typeof o> & {
+                (
+                    q: Partial<typeof o> & {
                     key: string;
                     replacements?: { [key: string]: unknown };
                     guild_id?: bigint;
                 },
-            ): string => {
-                const old_lang = Translator.current_language;
-                let translation;
-                let cache;
-                if (q.lang && q.lang !== SupportedLanguages.AUTO) {
-                    Translator.current_language = q.lang;
-                }
-                if (Translator.current_language === SupportedLanguages.AUTO) {
-                    const target_lang = Translator.guild_language_cache.get(q.guild_id!) ?? SupportedLanguages.EN_US;
-                    cache = Translator.translation_cache.get(target_lang);
-                } else {
-                    cache = Translator.translation_cache.get(Translator.current_language);
-                }
-                translation = Translator.resolveNestedKey(cache![namespace][q.caller ?? o.caller], q.key) || q.key;
-                if (q.replacements) {
-                    for (const [k, v] of Object.entries(q.replacements)) {
-                        const formatted_value =
+                ): string => {
+                    const old_lang = Translator.current_language;
+                    let translation;
+                    let cache;
+                    if (q.lang && q.lang !== SupportedLanguages.AUTO) {
+                        Translator.current_language = q.lang;
+                    }
+                    if (Translator.current_language === SupportedLanguages.AUTO) {
+                        const target_lang = Translator.guild_language_cache.get(q.guild_id!) ?? SupportedLanguages.EN_US;
+                        cache = Translator.translation_cache.get(target_lang);
+                    } else {
+                        cache = Translator.translation_cache.get(Translator.current_language);
+                    }
+                    translation = Translator.resolveNestedKey(cache![namespace][q.caller ?? o.caller], q.key) || q.key;
+                    if (q.replacements) {
+                        for (const [k, v] of Object.entries(q.replacements)) {
+                            const formatted_value =
                             typeof v === 'object' && v !== null
                                 ? Translator.formatDiscordEntity(v as BaseChannel | Guild | User)
                                 : String(v);
-                        translation = translation.replace(new RegExp(`\\{${k}\\}`, 'g'), formatted_value);
+                            translation = translation.replace(new RegExp(`\\{${k}\\}`, 'g'), formatted_value);
+                        }
                     }
-                }
 
-                Translator.current_language = old_lang;
-                return translation;
-            };
+                    Translator.current_language = old_lang;
+                    return translation;
+                };
 
         return {
             commands: makeQuery('commands'),

@@ -140,7 +140,7 @@ export function SettingStringSelectComponent(
     },
 ): MethodDecorator {
     return generateSettingComponent(o, (orig, { name, pretty_key, options }) => {
-        return async function (this, interaction, ...args: unknown[]) {
+        return async function(this, interaction, ...args: unknown[]) {
             if (interaction.isStringSelectMenu() && args.length > 0) {
                 return await orig.apply(this, [interaction, ...args]);
             } else if (interaction.isStringSelectMenu()) {
@@ -192,7 +192,7 @@ export function SettingChannelMenuComponent(
     },
 ): MethodDecorator {
     return generateSettingComponent(o, (orig, { name, pretty_key, options }) => {
-        return async function (this, interaction, ...args: unknown[]) {
+        return async function(this, interaction, ...args: unknown[]) {
             if (interaction.isChannelSelectMenu()) {
                 return await orig.apply(this, [interaction, ...args]);
             }
@@ -240,7 +240,7 @@ export function SettingRoleSelectMenuComponent(
     },
 ): MethodDecorator {
     return generateSettingComponent(o, (orig, { name, pretty_key, options }) => {
-        return async function (this, interaction, ...args: unknown[]) {
+        return async function(this, interaction, ...args: unknown[]) {
             if (interaction.isRoleSelectMenu()) {
                 return await orig.apply(this, [interaction, ...args]);
             }
@@ -287,7 +287,7 @@ export function SettingUserSelectMenuComponent(
     },
 ): MethodDecorator {
     return generateSettingComponent(o, (orig, { name, pretty_key, options }) => {
-        return async function (this, interaction, ...args: unknown[]) {
+        return async function(this, interaction, ...args: unknown[]) {
             if (interaction.isUserSelectMenu()) {
                 return await orig.apply(this, [interaction, ...args]);
             }
@@ -348,7 +348,7 @@ export function SettingModalComponent(
     },
 ): MethodDecorator {
     return generateSettingComponent(o, (orig, { name, pretty_key, options }) => {
-        return async function (this, interaction, ...args: unknown[]) {
+        return async function(this, interaction, ...args: unknown[]) {
             if (interaction.isModalSubmit()) {
                 if ((options as typeof o).require_selectmenu) {
                     const custom_id_parts = interaction.customId.split(':');
