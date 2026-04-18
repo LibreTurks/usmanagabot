@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Channels } from './channels';
 import { Guilds } from './guilds';
 import { Messages } from './messages';
@@ -39,6 +39,7 @@ export class Starboard {
     timestamp!: Date;
 }
 
+@Unique(['source_message'])
 @Entity()
 export class StarboardLogs {
     @PrimaryGeneratedColumn({ type: 'smallint' })
