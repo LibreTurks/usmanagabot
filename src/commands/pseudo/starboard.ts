@@ -22,6 +22,7 @@ import {
     User,
 } from 'discord.js';
 import { CommandLoader } from '..';
+import { QueryFailedError } from 'typeorm';
 
 /*
  * Starboard system for highlighting popular messages in a dedicated channel based on user reactions.
@@ -93,8 +94,11 @@ export default class StarboardCommand extends CustomizableCommand {
         const reaction_emoji = reaction.emoji.id ? reaction.emoji.toString() : reaction.emoji.name;
         if (reaction_emoji !== starboard.emoji) return;
 
+        // Ignore reactions on messages already in the starboard channel
+        if (message.channel.id === starboard.channel_id.toString()) return;
+
         // Fetch or create the starboard message record in the database
-        const guild = await this.db.getGuild(BigInt(message.guild.id));
+        const guild = await this.db.getGuild(BigInt(message.guild!.id));
         let starboard_msg = await this.db.findOne(StarboardLogs, {
             where: { source_message: { message_id: BigInt(message.id) } },
         });
@@ -104,12 +108,9 @@ export default class StarboardCommand extends CustomizableCommand {
         // Check if users are allowed to star their own messages and if the reactor is the message author
         if (is_add && !starboard.allow_self_star && message.author?.id === user.id) return;
 
-        // Ignore reactions on messages already in the starboard channel
-        if (message.channel.id === starboard.channel_id.toString()) return;
-
         // Fetch the starboard channel and check if it's sendable
         const starboard_channel = await BotClient.client.guilds
-            .fetch(message.guild.id)
+            .fetch(message.guild!.id)
             .then((g) => g.channels.fetch(starboard.channel_id!.toString()));
         if (!starboard_channel?.isSendable()) return;
 
@@ -118,16 +119,24 @@ export default class StarboardCommand extends CustomizableCommand {
         if (!starboard_msg) {
             if (reaction_count < starboard.threshold) return;
             const chan = await RegisterFact<Channel>(message.channel, undefined);
-            const user = await RegisterFact<User>(message.author!, undefined);
+            const author = await RegisterFact<User>(message.author!, undefined);
             let msg = await this.db.findOne(Messages, { where: { message_id: BigInt(message.id) } });
             if (!msg) {
                 msg = new Messages();
                 msg.timestamp = new Date(message.createdTimestamp);
                 msg.message_id = BigInt(message.id);
                 msg.from_channel = chan;
-                msg.from_user = user;
+                msg.from_user = author;
                 msg.from_guild = guild!;
-                await this.db.save(Messages, msg);
+                try {
+                    await this.db.save(Messages, msg);
+                } catch (e) {
+                    if (e instanceof QueryFailedError && (e as any).driverError?.code === '23505') {
+                        msg = (await this.db.findOne(Messages, { where: { message_id: BigInt(message.id) } }))!;
+                    } else {
+                        throw e;
+                    }
+                }
             }
             starboard_msg = new StarboardLogs();
             starboard_msg.star_count = reaction_count;
@@ -135,7 +144,19 @@ export default class StarboardCommand extends CustomizableCommand {
             starboard_msg.from_user = await RegisterFact<User>(message.author!, undefined);
             starboard_msg.from_channel = await RegisterFact<Channel>(message.channel, undefined);
             starboard_msg.from_guild = guild!;
-            await this.db.save(StarboardLogs, starboard_msg);
+            try {
+                await this.db.save(StarboardLogs, starboard_msg);
+            } catch (e) {
+                if (e instanceof QueryFailedError && (e as any).driverError?.code === '23505') {
+                    starboard_msg = (await this.db.findOne(StarboardLogs, {
+                        where: { source_message: { message_id: BigInt(message.id) } },
+                    }))!;
+                    starboard_msg.star_count = reaction_count;
+                    await this.db.save(StarboardLogs, starboard_msg);
+                } else {
+                    throw e;
+                }
+            }
         } else {
             starboard_msg.star_count = reaction_count;
             await this.db.save(StarboardLogs, starboard_msg);

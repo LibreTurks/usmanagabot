@@ -14,7 +14,7 @@ export class Messages {
     @Column({ type: 'boolean', nullable: false, default: false })
     message_is_edited!: boolean;
 
-    @Column({ type: 'bigint', nullable: false })
+    @Column({ type: 'bigint', nullable: false, unique: true })
     message_id!: bigint;
 
     @Column({ type: 'bigint', nullable: true, default: null })
