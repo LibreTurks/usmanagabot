@@ -390,7 +390,7 @@ export default class EarthquakeNotifierCommand extends CustomizableCommand {
                             key: 'execute.other_earthquakes',
                             guild_id: BigInt(guild.from_guild.gid),
                         }),
-                        value: 'https://deprem.core.xeome.dev',
+                        value: 'https://deprem.in',
                     },
                 );
                 const channel = await BotClient.client.guilds
