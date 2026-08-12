@@ -1,0 +1,17 @@
+{
+    "$schema": "../../../types/structure/schemas/service.json",
+    "health": {
+        "info": {
+            "started": "Health endpoint is listening on port {port}.",
+        },
+        "error": {
+            "start_failed": "Failed to start health endpoint: {message}",
+            "db_ping_failed": "Database liveness check failed: {message}",
+        },
+        "debug": {
+            "disabled": "Health endpoint is disabled by configuration.",
+            "stopped": "Health endpoint has been stopped.",
+            "request": "{method} {path} → {status}",
+        },
+    },
+}

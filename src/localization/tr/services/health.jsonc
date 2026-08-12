@@ -1,0 +1,17 @@
+{
+    "$schema": "../../../types/structure/schemas/service.json",
+    "health": {
+        "info": {
+            "started": "Sağlık uç noktası {port} portunda dinleniyor.",
+        },
+        "error": {
+            "start_failed": "Sağlık uç noktası başlatılamadı: {message}",
+            "db_ping_failed": "Veritabanı canlılık kontrolü başarısız: {message}",
+        },
+        "debug": {
+            "disabled": "Sağlık uç noktası yapılandırma tarafından devre dışı bırakıldı.",
+            "stopped": "Sağlık uç noktası durduruldu.",
+            "request": "{method} {path} → {status}",
+        },
+    },
+}
