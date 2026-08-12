@@ -19,5 +19,13 @@
         "channel_id": "",
         "guild_id": "",
         "user_id": "",
-    }
+    },
+
+    //* Health endpoint (HTTP server exposing /health, /health/live, /health/ready for probes)
+    "health": {
+        //* Enable the health HTTP endpoint (useful for Kubernetes/Docker probes)
+        "enabled": true,
+        //* Port the health HTTP server listens on
+        "port": 3000,
+    },
 }

@@ -1,6 +1,7 @@
 import { BotClient } from '@services/client';
 import { Config } from '@services/config';
 import { Database } from '@services/database';
+import { Health } from '@services/health';
 import { Logger } from '@services/logger';
 import pkg from '../package.json';
 import { Translator } from '@services/translator';
@@ -17,6 +18,7 @@ import { Translator } from '@services/translator';
     Logger.setLogLevel = Config.current_botcfg.log_level;
     Translator.setLanguage = Config.current_botcfg.language;
     await Database.init();
+    await Health.init();
     await BotClient.init(Config.current_botcfg.token);
     Logger.send('services', 'system', 'info', 'started', { name: pkg.name, version: pkg.version });
 })();
