@@ -110,4 +110,26 @@ export class Database {
             );
         }
     }
+
+    /**
+     * Gracefully closes the TypeORM `DataSource`, releasing the underlying connection pool.
+     *
+     * Safe to call when the datasource was never initialized or already destroyed; in those
+     * cases the method resolves without performing any work and without throwing.
+     * @public
+     * @static
+     * @async
+     * @returns {Promise<void>} Resolves when the connection has been closed (or there was nothing to close).
+     */
+    public static async stop(): Promise<void> {
+        const data_source = Database.dataSource;
+        if (!data_source) return;
+        try {
+            await data_source.destroy();
+            Logger.send('services', 'database', 'info', 'closed');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            Logger.send('services', 'database', 'error', 'close_failed', { message });
+        }
+    }
 }

@@ -61,4 +61,20 @@ export class BotClient {
         await CommandLoader.init();
         await BotClient.client.login(token);
     }
+
+    /**
+     * Gracefully tears down the Discord.js client.
+     *
+     * `client.destroy()` closes the gateway WebSocket, flushes pending writes and removes all
+     * event listeners registered via `client.on/once`. After this call, no further Discord
+     * events will be delivered. Safe to call when the client was never initialized.
+     * @public
+     * @static
+     * @async
+     * @returns {Promise<void>} Resolves when the gateway has been closed.
+     */
+    public static async stop(): Promise<void> {
+        if (!BotClient.client) return;
+        await BotClient.client.destroy();
+    }
 }
