@@ -1,153 +1,212 @@
 name: Build and Push Docker Images
 
 on:
-  push:
-    branches:
-    tags:
-    paths:
-      - 'src/**'
-      - 'Dockerfile'
-      - 'package.json'
-      - 'tsconfig.json'
-      - 'bun.lock'
-  workflow_dispatch:
-    inputs:
-      version_string:
-        description: 'Custom version (optional)'
-      is_latest:
-        description: 'Apply "latest" tag to this build?'
-        type: boolean
-        default: false
+    push:
+        paths:
+            - 'src/**'
+            - 'Dockerfile'
+            - 'package.json'
+            - 'tsconfig.json'
+            - 'bun.lock'
+    workflow_dispatch:
+        inputs:
+            version_string:
+                description: 'Custom version (optional)'
+            is_latest:
+                description: 'Apply "latest" tag to this build?'
+                type: boolean
+                default: false
 
 env:
-  REPO: ${{ github.repository }}
+    REPO: ${{ github.repository }}
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - runs-on: ubuntu-latest
-            platform: linux/amd64
-            targetarch: amd64
-          - runs-on: ubuntu-24.04-arm
-            platform: linux/arm64
-            targetarch: arm64
-    runs-on: ${{ matrix.runs-on }}
-    outputs:
-      final_version: ${{ steps.versioning.outputs.version }}
-      lower_repo: ${{ steps.repo_fix.outputs.repo }}
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+    bump:
+        # When a version tag (e.g. "2.6.0" or "v2.6.0") is pushed, sync the `version` field in
+        # `package.json` on the default branch with the tag name before any image is built, so the
+        # in-repo manifest always reflects the most recent release. The job is a no-op (and reports
+        # `skipped`) on branch pushes or non-semver tags, allowing the downstream `build` job to run
+        # unconditionally via `if: always()`.
+        if: github.ref_type == 'tag'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        outputs:
+            version: ${{ steps.ver.outputs.version }}
+            changed: ${{ env.changed }}
+        steps:
+            - name: Extract version from tag
+              id: ver
+              run: |
+                  TAG="${{ github.ref_name }}"
+                  # Strip optional leading "v" (e.g. "v2.6.0" -> "2.6.0")
+                  VERSION="${TAG#v}"
+                  # Skip the job for non-semver tags ("main-abc1234" etc.)
+                  if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+                    echo "::notice::Tag '$TAG' is not a semver release; skipping bump."
+                    echo "skip=true" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  echo "skip=false" >> $GITHUB_OUTPUT
 
-      - name: Lowercase Repo Name
-        id: repo_fix
-        run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+            - name: Checkout default branch
+              if: steps.ver.outputs.skip != 'true'
+              uses: actions/checkout@v6
+              with:
+                  ref: ${{ github.event.repository.default_branch }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  persist-credentials: true
 
-      - name: Update package.json version
-        id: versioning
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version_string }}" ]]; then
-            NEW_VERSION="${{ github.event.inputs.version_string }}"
-          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
-            NEW_VERSION="${{ github.ref_name }}"
-          else
-            SHORT_SHA="${GITHUB_SHA:0:7}"
-            NEW_VERSION="${{ github.ref_name }}-$SHORT_SHA"
-          fi
-          
-          if [[ "${{ github.ref_name }}" = "main" ]]; then
-            updated_json=$(jq ".version = \"$NEW_VERSION\"" package.json) && echo "$updated_json" | tee package.json > /dev/null
-          fi
+            - name: Update package.json version
+              if: steps.ver.outputs.skip != 'true'
+              run: |
+                  CURRENT="$(jq -r .version package.json)"
+                  NEW="${{ steps.ver.outputs.version }}"
+                  echo "Current=$CURRENT  New=$NEW"
+                  if [ "$CURRENT" = "$NEW" ]; then
+                    echo "::notice::package.json already at $NEW; nothing to commit."
+                    echo "changed=false" >> $GITHUB_ENV
+                  else
+                    jq --arg v "$NEW" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+                    git config user.name "github-actions[bot]"
+                    git config user.email "github-actions[bot]@users.noreply.github.com"
+                    git add package.json
+                    git commit -m "chore(release): bump version to $NEW"
+                    git push
+                    echo "changed=true" >> $GITHUB_ENV
+                    echo "::notice::Committed version bump to $NEW on ${{ github.event.repository.default_branch }}."
+                  fi
 
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+    build:
+        needs: bump
+        # Run regardless of whether `bump` was skipped (branch push) or succeeded (tag push),
+        # but never when `bump` failed — a failed manifest commit must abort the release build.
+        if: ${{ !failure() && (needs.bump.result == 'success' || needs.bump.result == 'skipped') }}
+        strategy:
+            matrix:
+                include:
+                    - runs-on: ubuntu-latest
+                      platform: linux/amd64
+                      targetarch: amd64
+                    - runs-on: ubuntu-24.04-arm
+                      platform: linux/arm64
+                      targetarch: arm64
+        runs-on: ${{ matrix.runs-on }}
+        outputs:
+            final_version: ${{ steps.versioning.outputs.version }}
+            lower_repo: ${{ steps.repo_fix.outputs.repo }}
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            - name: Lowercase Repo Name
+              id: repo_fix
+              run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ steps.repo_fix.outputs.repo }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.event.inputs.is_latest == 'true' }}
-            type=raw,value=${{ steps.versioning.outputs.version }},enable=${{ steps.versioning.outputs.version != 'main' }}
-            type=semver,pattern={{version}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
-            type=semver,pattern={{major}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+            - name: Update package.json version
+              id: versioning
+              run: |
+                  if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version_string }}" ]]; then
+                    NEW_VERSION="${{ github.event.inputs.version_string }}"
+                  elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+                    NEW_VERSION="${{ github.ref_name }}"
+                  else
+                    SHORT_SHA="${GITHUB_SHA:0:7}"
+                    NEW_VERSION="${{ github.ref_name }}-$SHORT_SHA"
+                  fi
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+                  if [[ "${{ github.ref_name }}" = "main" ]]; then
+                    updated_json=$(jq ".version = \"$NEW_VERSION\"" package.json) && echo "$updated_json" | tee package.json > /dev/null
+                  fi
 
-      - name: Build and push by digest
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: ${{ matrix.platform }}
-          outputs: type=image,name=ghcr.io/${{ steps.repo_fix.outputs.repo }},push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+                  echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Export digest
-        run: |
-          mkdir -p ${{ runner.temp }}/digests
-          echo "${{ steps.build.outputs.digest }}" > "${{ runner.temp }}/digests/${{ matrix.targetarch }}.digest"
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-      - name: Upload digest
-        uses: actions/upload-artifact@v6
-        with:
-          name: digests-${{ matrix.targetarch }}
-          path: ${{ runner.temp }}/digests/*
-          retention-days: 1
+            - name: Docker meta
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ steps.repo_fix.outputs.repo }}
+                  tags: |
+                      type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.event.inputs.is_latest == 'true' }}
+                      type=raw,value=${{ steps.versioning.outputs.version }},enable=${{ steps.versioning.outputs.version != 'main' }}
+                      type=semver,pattern={{version}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+                      type=semver,pattern={{major}}.{{minor}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+                      type=semver,pattern={{major}},value=${{ steps.versioning.outputs.version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
 
-  merge:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      packages: write
-    steps:
-      - name: Download digests
-        uses: actions/download-artifact@v6
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: digests-*
-          merge-multiple: true
+            - name: Login to GHCR
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Build and push by digest
+              id: build
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  platforms: ${{ matrix.platform }}
+                  outputs: type=image,name=ghcr.io/${{ steps.repo_fix.outputs.repo }},push-by-digest=true,name-canonical=true,push=true
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            - name: Export digest
+              run: |
+                  mkdir -p ${{ runner.temp }}/digests
+                  echo "${{ steps.build.outputs.digest }}" > "${{ runner.temp }}/digests/${{ matrix.targetarch }}.digest"
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ needs.build.outputs.lower_repo }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.event.inputs.is_latest == 'true' }}
-            type=raw,value=${{ needs.build.outputs.final_version }},enable=${{ needs.build.outputs.final_version != 'main' }}
-            type=semver,pattern={{version}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
-            type=semver,pattern={{major}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+            - name: Upload digest
+              uses: actions/upload-artifact@v6
+              with:
+                  name: digests-${{ matrix.targetarch }}
+                  path: ${{ runner.temp }}/digests/*
+                  retention-days: 1
 
-      - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
-        run: |
-          TAGS=$(echo "${{ steps.meta.outputs.tags }}" | xargs -I {} echo "-t {}")
-          SOURCES=$(printf 'ghcr.io/${{ needs.build.outputs.lower_repo }}@%s ' $(cat *.digest))
-          docker buildx imagetools create $TAGS $SOURCES
+    merge:
+        runs-on: ubuntu-latest
+        needs: build
+        permissions:
+            packages: write
+        steps:
+            - name: Download digests
+              uses: actions/download-artifact@v6
+              with:
+                  path: ${{ runner.temp }}/digests
+                  pattern: digests-*
+                  merge-multiple: true
+
+            - name: Login to GHCR
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Docker meta
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ needs.build.outputs.lower_repo }}
+                  tags: |
+                      type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.event.inputs.is_latest == 'true' }}
+                      type=raw,value=${{ needs.build.outputs.final_version }},enable=${{ needs.build.outputs.final_version != 'main' }}
+                      type=semver,pattern={{version}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+                      type=semver,pattern={{major}}.{{minor}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+                      type=semver,pattern={{major}},value=${{ needs.build.outputs.final_version }},enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+
+            - name: Create manifest list and push
+              working-directory: ${{ runner.temp }}/digests
+              run: |
+                  TAGS=$(echo "${{ steps.meta.outputs.tags }}" | xargs -I {} echo "-t {}")
+                  SOURCES=$(printf 'ghcr.io/${{ needs.build.outputs.lower_repo }}@%s ' $(cat *.digest))
+                  docker buildx imagetools create $TAGS $SOURCES
