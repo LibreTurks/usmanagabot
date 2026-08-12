@@ -3,15 +3,17 @@
     "database": {
         "debug": {
             "connecting": "Veritabanına bağlanılıyor...",
-            "connected": "Veritabanı bağlantısı başarılı."
+            "connected": "Veritabanı bağlantısı başarılı.",
         },
         "error": {
-            "connection_failed": "Veritabanı bağlantısı başarısız: {message}"
+            "connection_failed": "Veritabanı bağlantısı başarısız: {message}",
+            "close_failed": "Veritabanı kapatma başarısız: {message}",
         },
         "info": {
             "init": {
-                "success": "Veritabanı başarıyla başlatıldı."
-            }
-        }
-    }
+                "success": "Veritabanı başarıyla başlatıldı.",
+            },
+            "closed": "Veritabanı bağlantısı kapatıldı.",
+        },
+    },
 }

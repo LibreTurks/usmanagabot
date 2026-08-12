@@ -2,7 +2,13 @@
     "$schema": "../../../types/structure/schemas/service.json",
     "system": {
         "info": {
-            "started": "{name}@{version} başarıyla başlatıldı."
-        }
-    }
+            "started": "{name}@{version} başarıyla başlatıldı.",
+            "stopping": "{signal} alındı, düzgün kapatma başlatılıyor...",
+            "stopped": "Düzgün kapatma tamamlandı. Hoşça kal!",
+        },
+        "error": {
+            "stop_timeout": "Düzgün kapatma zaman aşımına uğradı; çıkış zorlanıyor.",
+            "stop_failed": "Düzgün kapatma başarısız: {message}",
+        },
+    },
 }

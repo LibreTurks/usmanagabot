@@ -6,12 +6,14 @@
             "connected": "Database connection successful.",
         },
         "error": {
-            "connection_failed": "Database connection failed: {message}"
+            "connection_failed": "Database connection failed: {message}",
+            "close_failed": "Database close failed: {message}",
         },
         "info": {
             "init": {
-                "success": "Database initialized successfully."
-            }
-        }
-    }
+                "success": "Database initialized successfully.",
+            },
+            "closed": "Database connection closed.",
+        },
+    },
 }
