@@ -38,6 +38,7 @@ const parseEnv = <T extends z.ZodType>(key: string, schema: T, parser?: (v: z.in
  * - language: localization language (enum of SupportedLanguages) - uses BOT__LANGUAGE env var if set, fallback to JSONC or SupportedLanguages.EN
  * - log_level: logging level (enum of LogLevels) - uses BOT__LOG_LEVEL env var if set, fallback to JSONC or debug/error based on NODE_ENV
  * - management: object containing management channel_id, guild_id, user_id (all strings) - uses BOT__MANAGEMENT__* env vars if set, fallback to JSONC
+ * - health: object containing enabled (boolean) and port (number 1-65535) for the /health HTTP endpoint - uses BOT__HEALTH__* env vars if set, fallback to JSONC or { enabled: true, port: 3000 }
  * - token: Discord bot token (string) - uses BOT__TOKEN env var if set, fallback to JSONC
  */
 const bot_config_schema = z.object({
@@ -73,6 +74,31 @@ const bot_config_schema = z.object({
         guild_id: parseEnv('BOT__MANAGEMENT__GUILD_ID', z.string().min(1, 'Management guild_id cannot be empty')),
         user_id: parseEnv('BOT__MANAGEMENT__USER_ID', z.string().min(1, 'Management user_id cannot be empty')),
     }),
+    health: z
+        .object({
+            enabled: parseEnv('BOT__HEALTH__ENABLED', z.boolean().default(true), (v) => {
+                if (typeof v === 'string') {
+                    return (v as string).toLowerCase() === 'true';
+                }
+                return v;
+            }),
+            port: parseEnv(
+                'BOT__HEALTH__PORT',
+                z
+                    .number()
+                    .int('Health port must be an integer')
+                    .min(1, 'Health port must be between 1 and 65535')
+                    .max(65535, 'Health port must be between 1 and 65535')
+                    .default(3000),
+                (v) => {
+                    if (typeof v === 'string') {
+                        return parseInt(v, 10);
+                    }
+                    return v;
+                },
+            ),
+        })
+        .default({ enabled: true, port: 3000 }),
     token: parseEnv('BOT__TOKEN', z.string().min(1, 'Bot token cannot be empty')),
 });
 export type BotConfig_t = z.infer<typeof bot_config_schema>;

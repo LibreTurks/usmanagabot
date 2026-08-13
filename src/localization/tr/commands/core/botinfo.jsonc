@@ -1,0 +1,35 @@
+{
+    "$schema": "../../../../types/structure/schemas/command.json",
+    "botinfo": {
+        "name": "botinfo",
+        "pretty_name": "Bot Bilgileri",
+        "description": "Botun sunucu ve çalışma zamanı bilgilerini görüntüler.",
+        "help": "Botun sunucu ve çalışma zamanı ortamı bilgilerini görüntüler.\n\n**Kullanım:**\n- `/botinfo` - Bellek kullanımı, çalışma süresi, sunucu detayları ve sürüm bilgilerini gösterir.\n\n**Görüntülenen Bilgiler:**\n- Bellek Kullanımı (RSS) — İşlem bellek kullanımı\n- Bellek Kullanımı (Sistem) — Toplam sistem bellek kullanımı\n- Çalışma Süresi — İşlem çalışma süresi\n- Sunucu — Platform, sunucu adı, mimari, çekirdek, işlemci\n- Çalışma Zamanı — Bun ve gömülü kütüphane sürümleri",
+        "parameters": {},
+        "execute": {
+            "title": "Sunucu Bilgileri",
+            "memory_rss": "Bellek Kullanımı (RSS)",
+            "memory_system": "Bellek Kullanımı (Sistem)",
+            "uptime": "Çalışma Süresi",
+            "host": "Sunucu",
+            "runtime": "Çalışma Zamanı",
+            "host_format": "Platform: `{platform}`, Sunucu adı: `{hostname}`, Mimari: `{arch}`, Sürüm: `{release}`, İşlemci: `{cpu}`",
+            "memory_format": "`{percent}`% (`{used}` / `{total}`)",
+        },
+        "subcommands": {},
+        "events": {},
+        "settings": {},
+        "logging": {
+            "debug": {
+                "execute": {
+                    "start": "\"{guild}\" sunucusundaki \"{user}\" kullanıcısı tarafından \"Bot Bilgileri\" komutu yürütülmeye başlandı.",
+                    "success": "\"{guild}\" sunucusundaki \"{user}\" kullanıcısı tarafından \"Bot Bilgileri\" komutu başarıyla yürütüldü.",
+                },
+            },
+            "info": {},
+            "warn": {},
+            "error": {},
+            "log": {},
+        },
+    },
+}

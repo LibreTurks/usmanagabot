@@ -1,0 +1,35 @@
+{
+    "$schema": "../../../../types/structure/schemas/command.json",
+    "botinfo": {
+        "name": "botinfo",
+        "pretty_name": "Bot Info",
+        "description": "Displays information about the bot's host system and runtime.",
+        "help": "Displays information about the bot's host system and runtime environment.\n\n**Usage:**\n- `/botinfo` - Shows memory usage, uptime, host details, and runtime versions.\n\n**Displayed Information:**\n- Memory Usage (RSS) — Process resident set size\n- Memory Usage (System) — Total system memory usage\n- Uptime — Process uptime\n- Host — Platform, hostname, architecture, kernel, CPU\n- Runtime — Bun and embedded library versions",
+        "parameters": {},
+        "execute": {
+            "title": "Server Information",
+            "memory_rss": "Memory Usage (RSS)",
+            "memory_system": "Memory Usage (System)",
+            "uptime": "Uptime",
+            "host": "Host",
+            "runtime": "Runtime",
+            "host_format": "Platform: `{platform}`, Hostname: `{hostname}`, Architecture: `{arch}`, Release: `{release}`, CPU: `{cpu}`",
+            "memory_format": "`{percent}`% (`{used}` of `{total}`)",
+        },
+        "subcommands": {},
+        "events": {},
+        "settings": {},
+        "logging": {
+            "debug": {
+                "execute": {
+                    "start": "\"Bot Info\" command execution started by user \"{user}\" in guild \"{guild}\".",
+                    "success": "\"Bot Info\" command executed successfully by user \"{user}\" in guild \"{guild}\".",
+                },
+            },
+            "info": {},
+            "warn": {},
+            "error": {},
+            "log": {},
+        },
+    },
+}

@@ -2,7 +2,13 @@
     "$schema": "../../../types/structure/schemas/service.json",
     "system": {
         "info": {
-            "started": "{name}@{version} has started successfully."
-        }
-    }
+            "started": "{name}@{version} has started successfully.",
+            "stopping": "Received {signal}, initiating graceful shutdown...",
+            "stopped": "Graceful shutdown complete. Bye!",
+        },
+        "error": {
+            "stop_timeout": "Graceful shutdown timed out; forcing exit.",
+            "stop_failed": "Graceful shutdown failed: {message}",
+        },
+    },
 }

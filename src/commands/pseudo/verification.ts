@@ -10,6 +10,7 @@ import {
     SettingRoleSelectMenuComponent,
 } from '@src/types/decorator/settingcomponents';
 import { CustomizableCommand } from '@src/types/structure/command';
+import { RegisterFact } from '@utils/common';
 import {
     ChannelSelectMenuInteraction,
     ChannelType,
@@ -19,6 +20,7 @@ import {
     RoleSelectMenuInteraction,
     StringSelectMenuInteraction,
     TextInputStyle,
+    User,
 } from 'discord.js';
 
 /**
@@ -107,10 +109,10 @@ export default class VerificationCommand extends CustomizableCommand {
         verification: Verification;
     }> {
         const guild = await this.db.getGuild(BigInt(member.guild.id));
-        const user = await this.db.getUser(BigInt(member.id));
+        const user = await RegisterFact<User>(member.user, undefined);
         const verification_system = (await this.db.findOne(VerificationSystem, { where: { from_guild: guild! } }))!;
         const verification =
-            (await this.db.findOne(Verification, { where: { from_user: user!, from_guild: guild! } })) ||
+            (await this.db.findOne(Verification, { where: { from_user: user, from_guild: guild! } })) ||
             new Verification();
         const message = [
             { key: '{{user}}', value: `<@${member.id}>` },
@@ -145,7 +147,7 @@ export default class VerificationCommand extends CustomizableCommand {
             member.roles.add(verification_system.role_id);
             verification.user_created_at = new Date(member.user.createdTimestamp);
             verification.remaining_time = new Date(Date.now() + verification_system.minimum_days * 86400000);
-            verification.from_user = (await this.db.getUser(BigInt(member.id)))!;
+            verification.from_user = await RegisterFact<User>(member.user, undefined);
             verification.from_guild = (await this.db.getGuild(BigInt(member.guild.id)))!;
             await this.db.save(Verification, verification);
             const channel = BotClient.client.channels.cache.get(verification_system.channel_id);

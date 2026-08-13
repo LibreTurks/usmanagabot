@@ -11,6 +11,8 @@ export BOT__MANAGEMENT__CHANNEL_ID="management_channel_id_here"
 export BOT__MANAGEMENT__GUILD_ID="management_guild_id_here"
 export BOT__MANAGEMENT__USER_ID="management_user_id_here"
 export BOT__TOKEN="bot_token_here"
+export BOT__HEALTH__ENABLED="true"
+export BOT__HEALTH__PORT="3000"
 export NODE_ENV="development"
 
 #################################################
