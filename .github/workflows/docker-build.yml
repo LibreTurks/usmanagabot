@@ -120,9 +120,7 @@ jobs:
                     NEW_VERSION="${{ github.ref_name }}-$SHORT_SHA"
                   fi
 
-                  if [[ "${{ github.ref_name }}" = "main" ]]; then
-                    updated_json=$(jq ".version = \"$NEW_VERSION\"" package.json) && echo "$updated_json" | tee package.json > /dev/null
-                  fi
+                  updated_json=$(jq ".version = \"$NEW_VERSION\"" package.json) && echo "$updated_json" | tee package.json > /dev/null
 
                   echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
