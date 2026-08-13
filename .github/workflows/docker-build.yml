@@ -8,6 +8,7 @@ on:
             - 'package.json'
             - 'tsconfig.json'
             - 'bun.lock'
+            - '.github/workflows/docker-build.yml'
     workflow_dispatch:
         inputs:
             version_string:
@@ -172,6 +173,7 @@ jobs:
     merge:
         runs-on: ubuntu-latest
         needs: build
+        if: ${{ !cancelled() && needs.build.result == 'success' }}
         permissions:
             packages: write
         steps:
