@@ -9,6 +9,7 @@ import {
 } from '@src/types/decorator/settingcomponents';
 import { CustomizableCommand } from '@src/types/structure/command';
 import { RegisterFact } from '@utils/common';
+import { withLock } from '@utils/withLock';
 import {
     Channel,
     ChannelSelectMenuInteraction,
@@ -61,6 +62,10 @@ export default class StarboardCommand extends CustomizableCommand {
     @ChainEvent({ type: Events.MessageReactionAdd })
     @ChainEvent({ type: Events.MessageReactionRemove })
     public async execute(reaction: MessageReaction, user: User): Promise<void> {
+        await withLock(reaction.message.id, () => this.processReaction(reaction, user));
+    }
+
+    private async processReaction(reaction: MessageReaction, user: User): Promise<void> {
         const reaction_key = reaction.emoji.id ?? reaction.emoji.name ?? '';
         let reaction_count = reaction.count ?? 0;
         let is_add = reaction_count > 0;
